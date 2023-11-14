@@ -15,7 +15,6 @@
 class Board {
     private:
         uint64_t piecesBitboards[2][6] = {0};
-        int enPassantCol = -1;
 
         std::list<Move> moveStack;
 
@@ -41,6 +40,7 @@ class Board {
         std::unordered_set<Move, MoveHash> opponentLegalMoves;
 
         bool inCheck = false;
+        int enPassantCol = -1;
         bool castling[2][2] = {0};
         Color turn = White;
 

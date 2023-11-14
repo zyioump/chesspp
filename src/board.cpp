@@ -22,6 +22,7 @@ bool Board::push(Move move) {
     if (pieceAtBitboard(move.to, &toPiece))
         piecesBitboards[toPiece.color][toPiece.pieceType] ^= move.to;
 
+    // Process Castling
     if (move.castling) {
         uint64_t kingRow = move.to >> ((turn == White) ? 0 : 7*8);
         if (kingRow & 0b1111) { // Queen side
@@ -33,10 +34,23 @@ bool Board::push(Move move) {
         }
     }
 
+    // Process en passant
+    if (move.enPassant) 
+        piecesBitboards[!turn][Pawn] ^= (uint64_t) 1 << (enPassantCol + 8*((turn == White) ? 4 : 3));
+
     piecesBitboards[fromPiece.color][fromPiece.pieceType] ^= move.from;
     if (move.promotion) piecesBitboards[fromPiece.color][Queen] ^= move.to;
     else piecesBitboards[fromPiece.color][fromPiece.pieceType] ^= move.to;
 
+    // En passant detection
+    enPassantCol = -1;
+    if (fromPiece.pieceType == Pawn) {
+        if (move.from & (uint64_t) 0xFF << 8*((turn == White) ? 1 : 6)) {
+            if (move.to & (uint64_t) 0xFF << 8*((turn == White) ? 3 : 4)) {
+                enPassantCol = (int) log2(move.to) & 7;
+            }
+        }
+    }
 
     turn = (Color) !turn;
     generateMoves();

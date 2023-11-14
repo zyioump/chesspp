@@ -74,8 +74,8 @@ void UserInterface::displayBoard(Board board) {
     SDL_RenderPresent(renderer);
 }
 
-SDL_Rect UserInterface::writeText(const char* text, int x, int y, SDL_Color color) {
-    SDL_Surface* textSurface = TTF_RenderText_Solid(font, text, color);
+SDL_Rect UserInterface::writeText(std::string text, int x, int y, SDL_Color color) {
+    SDL_Surface* textSurface = TTF_RenderText_Solid(font, text.c_str(), color);
     SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
     SDL_Rect rect;
     rect.x = x;
@@ -119,7 +119,10 @@ void UserInterface::displayDebug(Board board) {
     SDL_Rect rect = {chessSize, 0, debugSize, chessSize};
     SDL_RenderFillRect(renderer, &rect);
 
-    drawCastling(board, chessSize + margin, margin);
+    SDL_Rect castlingRect = drawCastling(board, chessSize + margin, margin);
+
+    std::string enPassantText = "En passant : " + std::to_string(board.enPassantCol);
+    writeText(enPassantText, castlingRect.x + castlingRect.w + 2*margin, castlingRect.y, textColor);
 }
 
 UIFlag UserInterface::chessClick(SDL_Event e, Board board, Move* move) {

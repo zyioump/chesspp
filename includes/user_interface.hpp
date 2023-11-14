@@ -2,6 +2,8 @@
 #define UserInterface_H
 
 #include <unordered_set>
+#include <math.h>
+#include <string>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -9,7 +11,6 @@
 #include <SDL2/SDL_ttf.h>
 
 #include "board.hpp"
-#include <math.h>
 
 enum UIFlag {
     QUIT,
@@ -35,7 +36,7 @@ class UserInterface {
         SDL_Color textColor = {255, 255, 255};
 
         UIFlag chessClick(SDL_Event e, Board board, Move* move);
-        SDL_Rect writeText(const char* text, int x, int y, SDL_Color color);
+        SDL_Rect writeText(std::string text, int x, int y, SDL_Color color);
 
         SDL_Window* window;
         SDL_Renderer* renderer;

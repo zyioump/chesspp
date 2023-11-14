@@ -2,8 +2,7 @@
 #include "board.hpp"
 
 int main(int argc, char *argv[]) {
-    Board board("r3k2r/8/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
-    /* Board board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"); */
+    Board board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     UserInterface ui;
 
     board.pieces(Rook, White);

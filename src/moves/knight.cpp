@@ -14,29 +14,29 @@ std::unordered_set<Move, MoveHash> Board::generateKnightMoves(uint64_t bitboard,
     uint64_t soSoWe = (bitboard & noACol) >> 17;
 
     if (noNoEa != 0)
-        if (noNoEa & colorBitboard) moves.insert(createMove(bitboard, noNoEa, false, true, true, false, KnightDir));
-        else moves.insert(createMove(bitboard, noNoEa, false, true, false, false, KnightDir));
+        if (noNoEa & colorBitboard) moves.insert(createMove(bitboard, noNoEa, false, true, true, false, false, KnightDir));
+        else moves.insert(createMove(bitboard, noNoEa, false, true, false, false, false, KnightDir));
     if (noEaEa != 0)
-        if (noEaEa & colorBitboard) moves.insert(createMove(bitboard, noEaEa, false, true, true, false, KnightDir));
-        else moves.insert(createMove(bitboard, noEaEa, false, true, false, false, KnightDir));
+        if (noEaEa & colorBitboard) moves.insert(createMove(bitboard, noEaEa, false, true, true, false, false, KnightDir));
+        else moves.insert(createMove(bitboard, noEaEa, false, true, false, false, false, KnightDir));
     if (soEaEa != 0)
-        if (soEaEa & colorBitboard) moves.insert(createMove(bitboard, soEaEa, false, true, true, false, KnightDir));
-        else moves.insert(createMove(bitboard, soEaEa, false, true, false, false, KnightDir));
+        if (soEaEa & colorBitboard) moves.insert(createMove(bitboard, soEaEa, false, true, true, false, false, KnightDir));
+        else moves.insert(createMove(bitboard, soEaEa, false, true, false, false, false, KnightDir));
     if (soSoEa != 0)
-        if (soSoEa & colorBitboard) moves.insert(createMove(bitboard, soSoEa, false, true, true, false, KnightDir));
-        else moves.insert(createMove(bitboard, soSoEa, false, true, false, false, KnightDir));
+        if (soSoEa & colorBitboard) moves.insert(createMove(bitboard, soSoEa, false, true, true, false, false, KnightDir));
+        else moves.insert(createMove(bitboard, soSoEa, false, true, false, false, false, KnightDir));
     if (noNoWe != 0)
-        if (noNoWe & colorBitboard) moves.insert(createMove(bitboard, noNoWe, false, true, true, false, KnightDir));
-        else moves.insert(createMove(bitboard, noNoWe, false, true, false, false, KnightDir));
+        if (noNoWe & colorBitboard) moves.insert(createMove(bitboard, noNoWe, false, true, true, false, false, KnightDir));
+        else moves.insert(createMove(bitboard, noNoWe, false, true, false, false, false, KnightDir));
     if (noWeWe != 0)
-        if (noWeWe & colorBitboard) moves.insert(createMove(bitboard, noWeWe, false, true, true, false, KnightDir));
-        else moves.insert(createMove(bitboard, noWeWe, false, true, false, false, KnightDir));
+        if (noWeWe & colorBitboard) moves.insert(createMove(bitboard, noWeWe, false, true, true, false, false, KnightDir));
+        else moves.insert(createMove(bitboard, noWeWe, false, true, false, false, false, KnightDir));
     if (soWeWe != 0)
-        if (soWeWe & colorBitboard) moves.insert(createMove(bitboard, soWeWe, false, true, true, false, KnightDir));
-        else moves.insert(createMove(bitboard, soWeWe, false, true, false, false, KnightDir));
+        if (soWeWe & colorBitboard) moves.insert(createMove(bitboard, soWeWe, false, true, true, false, false, KnightDir));
+        else moves.insert(createMove(bitboard, soWeWe, false, true, false, false, false, KnightDir));
     if (soSoWe != 0)
-        if (soSoWe & colorBitboard) moves.insert(createMove(bitboard, soSoWe, false, true, true, false, KnightDir));
-        else moves.insert(createMove(bitboard, soSoWe, false, true, false, false, KnightDir));
+        if (soSoWe & colorBitboard) moves.insert(createMove(bitboard, soSoWe, false, true, true, false, false, KnightDir));
+        else moves.insert(createMove(bitboard, soSoWe, false, true, false, false, false, KnightDir));
 
     return moves;
 } 
