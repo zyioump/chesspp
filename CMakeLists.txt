@@ -9,6 +9,7 @@ set(CMAKE_BUILD_TYPE debug)
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 find_package(SDL2_gfx REQUIRED)
+find_package(SDL2_ttf REQUIRED)
 
 add_executable(${PROJECT_NAME}
     src/main.cpp
@@ -21,5 +22,5 @@ add_executable(${PROJECT_NAME}
     src/utils.cpp
 )  
 
-target_link_libraries(${PROJECT_NAME} SDL2::Main SDL2::Image SDL2::GFX)
+target_link_libraries(${PROJECT_NAME} SDL2::Main SDL2::Image SDL2::GFX SDL2::TTF)
 target_include_directories(${PROJECT_NAME} PRIVATE includes/)

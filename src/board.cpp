@@ -5,10 +5,17 @@ bool Board::push(Move move) {
     move = *legalMoves.find(move);
 
     if (move.defend) return false;
-    moveStack.push_back(move);
 
     Piece fromPiece;
     if (!pieceAtBitboard(move.from, &fromPiece)) return false;
+
+    if (fromPiece.pieceType == King) {
+        castling[fromPiece.color][QueenSide] = 0;
+        castling[fromPiece.color][KingSide] = 0;
+    } else if (fromPiece.pieceType == Rook) {
+        if (move.from & ~noACol) castling[fromPiece.color][KingSide] = false;
+        else if (move.from & ~noHCol) castling[fromPiece.color][QueenSide] = false;
+    }
 
     Piece toPiece;
     if (pieceAtBitboard(move.to, &toPiece))
@@ -17,6 +24,8 @@ bool Board::push(Move move) {
     piecesBitboards[fromPiece.color][fromPiece.pieceType] ^= move.from;
     if (move.promotion) piecesBitboards[fromPiece.color][Queen] ^= move.to;
     else piecesBitboards[fromPiece.color][fromPiece.pieceType] ^= move.to;
+
+    moveStack.push_back(move);
 
     turn = (Color) !turn;
     generateMoves();
@@ -206,8 +215,8 @@ Board::Board(std::string fen) {
             if (isCapital) c += 'a' - 'A';
 
             switch (c) {
-                case 'q': this->castle[color][Queen] = true; break;
-                case 'k': this->castle[color][King] = true; break;
+                case 'q': this->castling[color][QueenSide] = true; break;
+                case 'k': this->castling[color][KingSide] = true; break;
             }
         } else if (fen_part == 3) {
             if (isDigit) this->enPassantCol = (int) c - (int) '0';

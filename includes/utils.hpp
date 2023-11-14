@@ -16,6 +16,11 @@ enum PieceType {
     Pawn 
 };
 
+enum Side {
+    QueenSide,
+    KingSide
+};
+
 // Carefully order so complementary is +- 4
 enum Direction {
     NoWe,
