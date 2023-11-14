@@ -17,6 +17,7 @@ std::unordered_set<Move, MoveHash> Board::generatePawnMoves(uint64_t bitboard, u
     promotionMask <<= 8*promotionRow;
 
     bool promotion = false;
+    Direction direction = (color == White) ? No : So;
 
     for (int moveDistance=1; moveDistance<=maxMoveDistance; moveDistance++) {
         promotion = false;
@@ -31,7 +32,7 @@ std::unordered_set<Move, MoveHash> Board::generatePawnMoves(uint64_t bitboard, u
         uint64_t toAnotherPiece = toBitboard & globalBitboard;
         if (toAnotherPiece != 0) break;
 
-        moves.insert(createMove(bitboard, toBitboard, promotion, false, false));
+        moves.insert(createMove(bitboard, toBitboard, promotion, false, false, direction));
     }
 
     uint64_t attackingRow = 0;
@@ -44,18 +45,18 @@ std::unordered_set<Move, MoveHash> Board::generatePawnMoves(uint64_t bitboard, u
     // Attack
     if (color == White) {
         uint64_t noEaBitboard = noEaOne(bitboard);
-        if (noEaBitboard & opponentColorBitboard) moves.insert(createMove(bitboard, noEaBitboard, promotion, true, false));
-        if (noEaBitboard) moves.insert(createMove(bitboard, noEaBitboard, promotion, true, true));
+        if (noEaBitboard & opponentColorBitboard) moves.insert(createMove(bitboard, noEaBitboard, promotion, true, false, NoEa));
+        if (noEaBitboard) moves.insert(createMove(bitboard, noEaBitboard, promotion, true, true, NoEa));
         uint64_t noWeBitboard = noWeOne(bitboard);
-        if (noWeBitboard & opponentColorBitboard) moves.insert(createMove(bitboard, noWeBitboard, promotion, true, false));
-        if (noWeBitboard) moves.insert(createMove(bitboard, noWeBitboard, promotion, true, true));
+        if (noWeBitboard & opponentColorBitboard) moves.insert(createMove(bitboard, noWeBitboard, promotion, true, false, NoWe));
+        if (noWeBitboard) moves.insert(createMove(bitboard, noWeBitboard, promotion, true, true, NoWe));
     } else {
         uint64_t soEaBitboard = soEaOne(bitboard);
-        if (soEaBitboard & opponentColorBitboard) moves.insert(createMove(bitboard, soEaBitboard, promotion, true, false));
-        if (soEaBitboard) moves.insert(createMove(bitboard, soEaBitboard, promotion, true, true));
+        if (soEaBitboard & opponentColorBitboard) moves.insert(createMove(bitboard, soEaBitboard, promotion, true, false, SoEa));
+        if (soEaBitboard) moves.insert(createMove(bitboard, soEaBitboard, promotion, true, true, SoEa));
         uint64_t soWeBitboard = soWeOne(bitboard);
-        if (soWeBitboard & opponentColorBitboard) moves.insert(createMove(bitboard, soWeBitboard, promotion, true, false));
-        if (soWeBitboard) moves.insert(createMove(bitboard, soWeBitboard, promotion, true, true));
+        if (soWeBitboard & opponentColorBitboard) moves.insert(createMove(bitboard, soWeBitboard, promotion, true, false, SoWe));
+        if (soWeBitboard) moves.insert(createMove(bitboard, soWeBitboard, promotion, true, true, SoWe));
     }
 
     return moves;

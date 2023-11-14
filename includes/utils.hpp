@@ -16,15 +16,18 @@ enum PieceType {
     Pawn 
 };
 
+// Carefully order so complementary is +- 4
 enum Direction {
-    No,
-    So,
-    Ea,
-    We,
-    NoEa,
     NoWe,
+    No,
+    NoEa,
+    Ea,
     SoEa,
-    SoWe
+    So,
+    SoWe,
+    We,
+    KnightDir,
+    NoDirection
 };
 
 enum Color {
@@ -38,6 +41,7 @@ struct Move {
     bool attack;
     bool promotion;
     bool defend;
+    Direction direction;
     // Should be ok to ignore attack, defend and promotion for equality or hashing
     // Not sure
     bool operator==(const Move move) const {return from == move.from && to == move.to;};
@@ -52,16 +56,19 @@ extern uint64_t rayAttackBitboard[64][8];
 void initRayAttack();
 
 struct PinnedPiece {
-    uint64_t bitboard;
+    uint square;
     Direction direction;
     
-    bool operator==(const PinnedPiece pinnedPiece) const {return bitboard == pinnedPiece.bitboard && direction == pinnedPiece.direction;};
+    // Don't check direction in == operator
+    // Direction is check after in the pieces move generation
+    // Allow to find bitboard without carring about the direction
+    bool operator==(const PinnedPiece pinnedPiece) const {return square == pinnedPiece.square;};
 };
 
 class PinnedPieceHash {
     public:
-        uint64_t operator()(const PinnedPiece pinnedPiece) const {
-            return rayAttackBitboard[pinnedPiece.bitboard][pinnedPiece.direction];
+        uint operator()(const PinnedPiece pinnedPiece) const {
+            return pinnedPiece.square;
         }
 };
 
@@ -81,7 +88,7 @@ extern uint64_t no8Row;
 
 void displayBitboard(uint64_t bitboard);
 
-struct Move createMove(uint64_t to, uint64_t from, bool promotion, bool attack, bool defend);
+struct Move createMove(uint64_t to, uint64_t from, bool promotion, bool attack, bool defend, Direction direction);
 
 uint64_t eastOne(uint64_t bitboard);
 uint64_t noEaOne(uint64_t bitboard);

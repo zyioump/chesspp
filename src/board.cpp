@@ -60,30 +60,86 @@ uint64_t Board::getColorBitboard(Color color){
 
 std::unordered_set<Move, MoveHash> Board::generateColorMoves(uint64_t colorBitboard, uint64_t opponentColorBitboard, uint64_t globalBitboard, Color color, std::unordered_set<Move, MoveHash>* opponentLegalMovesPtr) {
     inCheck = false;
+    uint kingAttackers = 0;
+    uint64_t kingAttackerBitboard;
+    Direction kingAttackerDirection = NoDirection;
+
     uint64_t attackedSquare = 0;
+
     if (opponentLegalMovesPtr != nullptr) 
         for (Move opponentMove: *opponentLegalMovesPtr)
-            if (opponentMove.attack) attackedSquare |= opponentMove.to;
+            if (opponentMove.attack) {
+                attackedSquare |= opponentMove.to;
+                if (piecesBitboards[color][King] == opponentMove.to) {
+                    kingAttackers++;
+                    kingAttackerBitboard = opponentMove.from;
+
+                    Piece kingAttacker;
+                    pieceAt(kingAttackerBitboard, &kingAttacker);
+                    if (kingAttacker.pieceType == Queen || kingAttacker.pieceType == Rook || kingAttacker.pieceType == Bishop)
+                        kingAttackerDirection = opponentMove.direction;
+                }
+            }
+
+    uint64_t kingProtectionSquare = 0xffffffffffffffff;
+    if (kingAttackers > 0) {
+        inCheck = true;
+        if (kingAttackers == 1) {
+            kingProtectionSquare = kingAttackerBitboard;
+            for (Move opponentMove: *opponentLegalMovesPtr)
+                if (opponentMove.attack && opponentMove.from == kingAttackerBitboard && opponentMove.direction == kingAttackerDirection) 
+                    kingProtectionSquare |= opponentMove.to;
+        }
+    }
 
     std::unordered_set<Move, MoveHash> moves;
 
-    if (piecesBitboards[color][King] & attackedSquare) inCheck = true;
-
-    for (int pieceType=0; pieceType<6; pieceType++){
-        for (uint64_t pieceBitboard : pieces((PieceType) pieceType, color)){
-            std::unordered_set<Move, MoveHash> piece_moves;
-            switch (pieceType) {
-                case Pawn: piece_moves = generatePawnMoves(pieceBitboard, globalBitboard, colorBitboard, opponentColorBitboard, color); break;
-                case Knight: piece_moves = generateKnightMoves(pieceBitboard, globalBitboard, colorBitboard, opponentColorBitboard, color); break;
-                case King: piece_moves = generateKingMoves(pieceBitboard, globalBitboard, colorBitboard, opponentColorBitboard, attackedSquare, color); break;
-                case Queen: piece_moves = generateSlidingPiecesMoves(pieceBitboard, queenDirections, globalBitboard, colorBitboard, opponentColorBitboard, color); break;
-                case Rook: piece_moves = generateSlidingPiecesMoves(pieceBitboard, rookDirections, globalBitboard, colorBitboard, opponentColorBitboard, color); break;
-                case Bishop: piece_moves = generateSlidingPiecesMoves(pieceBitboard, bishopDirections, globalBitboard, colorBitboard, opponentColorBitboard, color); break;
+    if (kingAttackers <=1) {
+        for (int pieceType=0; pieceType<6; pieceType++){
+            for (uint64_t pieceBitboard : pieces((PieceType) pieceType, color)){
+                std::unordered_set<Move, MoveHash> piece_moves;
+                switch (pieceType) {
+                    case Pawn: piece_moves = generatePawnMoves(pieceBitboard, globalBitboard, colorBitboard, opponentColorBitboard, color); break;
+                    case Knight: piece_moves = generateKnightMoves(pieceBitboard, globalBitboard, colorBitboard, opponentColorBitboard, color); break;
+                    case King: piece_moves = generateKingMoves(pieceBitboard, globalBitboard, colorBitboard, opponentColorBitboard, attackedSquare, kingAttackerDirection, color); break;
+                    case Queen: piece_moves = generateSlidingPiecesMoves(pieceBitboard, queenDirections, globalBitboard, colorBitboard, opponentColorBitboard, color); break;
+                    case Rook: piece_moves = generateSlidingPiecesMoves(pieceBitboard, rookDirections, globalBitboard, colorBitboard, opponentColorBitboard, color); break;
+                    case Bishop: piece_moves = generateSlidingPiecesMoves(pieceBitboard, bishopDirections, globalBitboard, colorBitboard, opponentColorBitboard, color); break;
+                }
+                if (kingAttackers == 1 && pieceType != King) piece_moves = removeNonKingProtectionMove(piece_moves, kingProtectionSquare);
+                moves.merge(removeNonLegalMove(piece_moves, pieceBitboard, (PieceType) pieceType));
             }
-            moves.merge(piece_moves);
         }
+    } else {
+        return generateKingMoves(piecesBitboards[color][King], globalBitboard, colorBitboard, opponentColorBitboard, attackedSquare, kingAttackerDirection, color);
     }
     return moves;
+}
+
+ std::unordered_set<Move, MoveHash> Board::removeNonKingProtectionMove(std::unordered_set<Move, MoveHash> moves, uint64_t kingProtectionSquare) {
+     std::unordered_set<Move, MoveHash> legalMoves;
+     for (Move move: moves) {
+         if (move.to & kingProtectionSquare) legalMoves.insert(move);
+     }
+     return legalMoves;
+ }
+
+ std::unordered_set<Move, MoveHash> Board::removeNonLegalMove(std::unordered_set<Move, MoveHash> moves, uint64_t pieceBitboard, PieceType pieceType) {
+     PinnedPiece searchPinnedPiece = PinnedPiece();
+     searchPinnedPiece.square = log2(pieceBitboard);
+
+     std::unordered_set<PinnedPiece, PinnedPieceHash>::iterator pinnedPieceItr = pinnedPieces.find(searchPinnedPiece);
+     if (pinnedPieceItr == pinnedPieces.end()) return moves;
+
+     std::unordered_set<Move, MoveHash> legalMoves;
+     if (pieceType == Knight) return legalMoves;
+
+     Direction pinnedDirection = pinnedPieceItr->direction;
+     Direction complementaryPinnedDirection = (pinnedDirection > 4) ? Direction (pinnedDirection - 4) : Direction (pinnedDirection + 4);
+     for (Move move: moves)
+         if (move.direction == pinnedDirection || move.direction == complementaryPinnedDirection) legalMoves.insert(move);
+
+     return legalMoves;
 }
 
 void Board::generateMoves(){
@@ -91,7 +147,7 @@ void Board::generateMoves(){
     uint64_t opponentColorBitboard = getColorBitboard((Color) !turn);
     uint64_t globalBitboard = opponentColorBitboard | colorBitboard;
 
-    pinnedPiece.clear();
+    pinnedPieces.clear();
 
     opponentLegalMoves = generateColorMoves(opponentColorBitboard, colorBitboard, globalBitboard, (Color) !turn, nullptr);
     legalMoves = generateColorMoves(colorBitboard, opponentColorBitboard, globalBitboard, turn, &opponentLegalMoves);

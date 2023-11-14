@@ -25,14 +25,17 @@ class Board {
         std::unordered_set<Direction> rookDirections = {No, So, Ea, We};
         std::unordered_set<Direction> bishopDirections = {NoEa, NoWe, SoEa, SoWe};
 
-        std::unordered_set<PinnedPiece, PinnedPieceHash> pinnedPiece;
+        std::unordered_set<PinnedPiece, PinnedPieceHash> pinnedPieces;
 
         void generateMoves();
         std::unordered_set<Move, MoveHash> generateColorMoves(uint64_t colorBitboard, uint64_t opponentColorBitboard, uint64_t globalBitboard, Color color, std::unordered_set<Move, MoveHash>* opponentLegalAttackPtr);
 
+        std::unordered_set<Move, MoveHash> removeNonKingProtectionMove(std::unordered_set<Move, MoveHash> moves, uint64_t piecesBitboard);
+        std::unordered_set<Move, MoveHash> removeNonLegalMove(std::unordered_set<Move, MoveHash> moves, uint64_t kingProtectionSquare, PieceType pieceType);
+
         std::unordered_set<Move, MoveHash> generatePawnMoves(uint64_t bitboard, uint64_t globalBitboard, uint64_t colorBitboard, uint64_t opponentColorBitboard, Color color);
         std::unordered_set<Move, MoveHash> generateKnightMoves(uint64_t bitboard, uint64_t globalBitboard, uint64_t colorBitboard, uint64_t opponentColorBitboard, Color color);
-        std::unordered_set<Move, MoveHash> generateKingMoves(uint64_t bitboard, uint64_t globalBitboard, uint64_t colorBitboard, uint64_t opponentColorBitboard, uint64_t attackedSquare, Color color);
+        std::unordered_set<Move, MoveHash> generateKingMoves(uint64_t bitboard, uint64_t globalBitboard, uint64_t colorBitboard, uint64_t opponentColorBitboard, uint64_t attackedSquare, Direction attackerDirection, Color color);
         std::unordered_set<Move, MoveHash> generateSlidingPiecesMoves(uint64_t bitboard, std::unordered_set<Direction> rayDirections, uint64_t globalBitboard, uint64_t colorBitboard, uint64_t opponentColorBitboard, Color color);
         
     public:
