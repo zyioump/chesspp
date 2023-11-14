@@ -15,6 +15,7 @@
 enum UIFlag {
     QUIT,
     MOVE,
+    POP,
     NONE
 };
 

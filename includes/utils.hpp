@@ -86,6 +86,16 @@ class MoveHash {
         }
 };
 
+struct BoardSnapshot {
+    Move move;
+    bool castling[2][2];
+    Color turn;
+    int enPassantCol;
+    uint64_t piecesBitboards[2][6];
+    std::unordered_set<Move, MoveHash> legalMoves;
+    std::unordered_set<Move, MoveHash> opponentLegalMoves;
+};
+
 extern uint64_t noHCol;
 extern uint64_t noACol;
 extern uint64_t noGHCol;

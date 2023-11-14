@@ -16,7 +16,7 @@ class Board {
     private:
         uint64_t piecesBitboards[2][6] = {0};
 
-        std::list<Move> moveStack;
+        std::list<BoardSnapshot> moveStack;
 
         std::unordered_set<Direction> queenDirections = {No, So, Ea, We, NoEa, NoWe, SoEa, SoWe};
         std::unordered_set<Direction> rookDirections = {No, So, Ea, We};
@@ -45,6 +45,7 @@ class Board {
         Color turn = White;
 
         bool push(Move move);
+        void pop();
 
         uint64_t getColorBitboard(Color color);
         std::unordered_set<uint64_t> pieces(PieceType pieceType, Color color);

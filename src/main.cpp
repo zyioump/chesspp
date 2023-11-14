@@ -11,7 +11,8 @@ int main(int argc, char *argv[]) {
         Move move;
         UIFlag flag = ui.play(board, &move);
         if (flag == QUIT) break;
-        if (flag == MOVE) board.push(move);
+        else if (flag == MOVE) board.push(move);
+        else if (flag == POP) board.pop();
     }
 
     ui.free_memory();

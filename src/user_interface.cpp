@@ -122,7 +122,13 @@ void UserInterface::displayDebug(Board board) {
     SDL_Rect castlingRect = drawCastling(board, chessSize + margin, margin);
 
     std::string enPassantText = "En passant : " + std::to_string(board.enPassantCol);
-    writeText(enPassantText, castlingRect.x + castlingRect.w + 2*margin, castlingRect.y, textColor);
+    SDL_Rect enPassantRect = writeText(enPassantText, castlingRect.x + castlingRect.w + 2*margin, castlingRect.y, textColor);
+
+    SDL_Rect turnTextRect = writeText("Turn :", enPassantRect.x + enPassantRect.w + 2*margin, enPassantRect.y, textColor);
+    if (board.turn == White) SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    else SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_Rect turnIndicatorRect = {turnTextRect.x + turnTextRect.w + 2*margin, turnTextRect.y, turnTextRect.h, turnTextRect.h};
+    SDL_RenderFillRect(renderer, &turnIndicatorRect);
 }
 
 UIFlag UserInterface::chessClick(SDL_Event e, Board board, Move* move) {
@@ -162,7 +168,11 @@ UIFlag UserInterface::play(Board board, Move* move) {
             } else if (e.type == SDL_MOUSEBUTTONDOWN) {
                 if (e.button.button == SDL_BUTTON_LEFT){
                     if (e.button.x < chessSize) return chessClick(e, board, move);
-                } else clearHighlight();
+                } else if (e.button.button == SDL_BUTTON_RIGHT) {
+                    clearHighlight();
+                    return POP;
+                }
+                else clearHighlight();
                 displayBoard(board);
             }
         }

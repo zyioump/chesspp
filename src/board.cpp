@@ -9,6 +9,19 @@ bool Board::push(Move move) {
     Piece fromPiece;
     if (!pieceAtBitboard(move.from, &fromPiece)) return false;
 
+    // Snapshot
+    BoardSnapshot snapshot;
+    snapshot.turn = turn;
+    snapshot.move = move;
+    snapshot.enPassantCol = enPassantCol;
+    std::copy(std::begin(castling[0]), std::end(castling[0]), std::begin(snapshot.castling[0]));
+    std::copy(std::begin(castling[1]), std::end(castling[1]), std::begin(snapshot.castling[1]));
+    std::copy(std::begin(piecesBitboards[0]), std::end(piecesBitboards[0]), std::begin(snapshot.piecesBitboards[0]));
+    std::copy(std::begin(piecesBitboards[1]), std::end(piecesBitboards[1]), std::begin(snapshot.piecesBitboards[1]));
+    snapshot.legalMoves = legalMoves;
+    snapshot.opponentLegalMoves = opponentLegalMoves;
+    moveStack.push_back(snapshot);
+
     // Castling allowed ?
     if (fromPiece.pieceType == King) {
         castling[fromPiece.color][QueenSide] = 0;
@@ -55,6 +68,22 @@ bool Board::push(Move move) {
     turn = (Color) !turn;
     generateMoves();
     return true;
+}
+
+void Board::pop() {
+    if (moveStack.empty()) return;
+
+    BoardSnapshot snapshot = moveStack.back();
+    moveStack.pop_back();
+
+    turn = snapshot.turn;
+    enPassantCol = snapshot.enPassantCol;
+    std::copy(std::begin(snapshot.castling[0]), std::end(snapshot.castling[0]), std::begin(castling[0]));
+    std::copy(std::begin(snapshot.castling[1]), std::end(snapshot.castling[1]), std::begin(castling[1]));
+    std::copy(std::begin(snapshot.piecesBitboards[0]), std::end(snapshot.piecesBitboards[0]), std::begin(piecesBitboards[0]));
+    std::copy(std::begin(snapshot.piecesBitboards[1]), std::end(snapshot.piecesBitboards[1]), std::begin(piecesBitboards[1]));
+    legalMoves = snapshot.legalMoves;
+    opponentLegalMoves = snapshot.opponentLegalMoves;
 }
 
 bool Board::pieceAt(uint square, Piece* piece) {
