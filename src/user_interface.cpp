@@ -100,7 +100,7 @@ SDL_Rect UserInterface::drawCastling(Board board, int x, int y) {
             if (color == White) castlingRect.y= textRect.y + 2*margin;
             else castlingRect.y=textRect.y;
 
-            if (side == KingSide) castlingRect.x = textRect.x + textRect.w + margin;
+            if (side == QueenSide) castlingRect.x = textRect.x + textRect.w + margin;
             else castlingRect.x = textRect.x + textRect.w + 3*margin;
 
             if (board.castling[color][side]) SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);

@@ -37,8 +37,8 @@ std::unordered_set<Move, MoveHash> Board::generateSlidingPiecesMoves(uint64_t bi
 
         std::unordered_set<uint64_t> toSquares = serializeBitboard(attacks);
         for (uint64_t toSquare : toSquares)
-            if (toSquare & colorBitboard) moves.insert(createMove(bitboard, toSquare, false, true, true, direction));
-            else moves.insert(createMove(bitboard, toSquare, false, true, false, direction));
+            if (toSquare & colorBitboard) moves.insert(createMove(bitboard, toSquare, false, true, true, false, direction));
+            else moves.insert(createMove(bitboard, toSquare, false, true, false, false, direction));
     }
 
     return moves;

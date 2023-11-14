@@ -123,13 +123,14 @@ uint reverseBitscan(uint64_t bitboard) {
     return result;
 }
 
-struct Move createMove(uint64_t from, uint64_t to, bool promotion, bool attack, bool defend, Direction direction) {
+struct Move createMove(uint64_t from, uint64_t to, bool promotion, bool attack, bool defend, bool castling, Direction direction) {
     Move move;
     move.to = to;
     move.from = from;
     move.promotion = promotion;
     move.attack = attack;
     move.defend = defend;
+    move.castling = castling;
     move.direction = direction;
     return move;
 }

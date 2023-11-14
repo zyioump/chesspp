@@ -9,23 +9,34 @@ bool Board::push(Move move) {
     Piece fromPiece;
     if (!pieceAtBitboard(move.from, &fromPiece)) return false;
 
+    // Castling allowed ?
     if (fromPiece.pieceType == King) {
         castling[fromPiece.color][QueenSide] = 0;
         castling[fromPiece.color][KingSide] = 0;
     } else if (fromPiece.pieceType == Rook) {
-        if (move.from & ~noACol) castling[fromPiece.color][KingSide] = false;
-        else if (move.from & ~noHCol) castling[fromPiece.color][QueenSide] = false;
+        if (move.from & ~noACol) castling[fromPiece.color][QueenSide] = false;
+        else if (move.from & ~noHCol) castling[fromPiece.color][KingSide] = false;
     }
 
     Piece toPiece;
     if (pieceAtBitboard(move.to, &toPiece))
         piecesBitboards[toPiece.color][toPiece.pieceType] ^= move.to;
 
+    if (move.castling) {
+        uint64_t kingRow = move.to >> ((turn == White) ? 0 : 7*8);
+        if (kingRow & 0b1111) { // Queen side
+            piecesBitboards[turn][Rook] ^= move.from >> 4;
+            piecesBitboards[turn][Rook] ^= move.from >> 1;
+        } else { // King side
+            piecesBitboards[turn][Rook] ^= move.from << 3;
+            piecesBitboards[turn][Rook] ^= move.from << 1;
+        }
+    }
+
     piecesBitboards[fromPiece.color][fromPiece.pieceType] ^= move.from;
     if (move.promotion) piecesBitboards[fromPiece.color][Queen] ^= move.to;
     else piecesBitboards[fromPiece.color][fromPiece.pieceType] ^= move.to;
 
-    moveStack.push_back(move);
 
     turn = (Color) !turn;
     generateMoves();
@@ -211,7 +222,7 @@ Board::Board(std::string fen) {
                 case 'b': this->turn = Black; break;
             }
         } else if (fen_part == 2) {
-            Color color = static_cast<Color>(isCapital);
+            Color color = isCapital ? White : Black;
             if (isCapital) c += 'a' - 'A';
 
             switch (c) {

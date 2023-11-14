@@ -46,6 +46,7 @@ struct Move {
     bool attack;
     bool promotion;
     bool defend;
+    bool castling;
     Direction direction;
     // Should be ok to ignore attack, defend and promotion for equality or hashing
     // Not sure
@@ -93,7 +94,7 @@ extern uint64_t no8Row;
 
 void displayBitboard(uint64_t bitboard);
 
-struct Move createMove(uint64_t to, uint64_t from, bool promotion, bool attack, bool defend, Direction direction);
+struct Move createMove(uint64_t to, uint64_t from, bool promotion, bool attack, bool defend, bool castling, Direction direction);
 
 uint64_t eastOne(uint64_t bitboard);
 uint64_t noEaOne(uint64_t bitboard);
