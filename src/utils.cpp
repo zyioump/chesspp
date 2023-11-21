@@ -26,12 +26,12 @@ uint64_t westOne(uint64_t bitboard) { return (bitboard & noACol) >> 1; }
 uint64_t soWeOne(uint64_t bitboard) { return (bitboard & noACol) >> 9; }
 uint64_t noWeOne(uint64_t bitboard) { return (bitboard & noACol) << 7; }
 
-std::unordered_set<uint64_t> serializeBitboard(uint64_t bitboard) {
-    std::unordered_set<uint64_t> serializedBitboards;
+std::vector<uint64_t> serializeBitboard(uint64_t bitboard) {
+    std::vector<uint64_t> serializedBitboards;
 
     while (bitboard) {
         uint64_t seriablizedBitboard = bitboard & -bitboard;
-        serializedBitboards.insert(seriablizedBitboard);
+        serializedBitboards.push_back(seriablizedBitboard);
         bitboard &= bitboard - 1;
     }
 
@@ -93,7 +93,6 @@ void initRayAttack(){
     }
 }
 
-uint forwardBitscan(uint64_t bitboard) {return log2(bitboard & -bitboard);}
 uint reverseBitscan(uint64_t bitboard) {
     uint result = 0;
     if (bitboard > 0xFFFFFFFF) {
@@ -122,6 +121,7 @@ uint reverseBitscan(uint64_t bitboard) {
     }
     return result;
 }
+uint forwardBitscan(uint64_t bitboard) {return reverseBitscan(bitboard & -bitboard);}
 
 struct Move createMove(uint64_t from, uint64_t to, bool promotion, bool attack, bool defend, bool castling, bool enPassant, Direction direction) {
     Move move;
@@ -165,7 +165,7 @@ uint64_t antiDiagonalMask(int square) {
 }
 
 void bitboardToSquareName(uint64_t bitboard, char* squareName) {
-    uint square = log2(bitboard);
+    uint square = reverseBitscan(bitboard);
     uint col = square % 8;
     uint row = (square - col) / 8;
 

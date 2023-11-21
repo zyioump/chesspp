@@ -1,8 +1,9 @@
 #include "board.hpp"
 
 bool Board::push(Move move) {
-    if (legalMoves.find(move) == legalMoves.end()) return false;
-    move = *legalMoves.find(move);
+    auto searchMove = std::find(legalMoves.begin(), legalMoves.end(), move);
+    if (searchMove == legalMoves.end()) return false;
+    move = *searchMove;
 
     if (move.defend) return false;
 
@@ -62,7 +63,7 @@ bool Board::push(Move move) {
     if (fromPiece.pieceType == Pawn) {
         if (move.from & (uint64_t) 0xFF << 8*((turn == White) ? 1 : 6)) {
             if (move.to & (uint64_t) 0xFF << 8*((turn == White) ? 3 : 4)) {
-                enPassantCol = (int) log2(move.to) & 7;
+                enPassantCol = reverseBitscan(move.to) & 7;
             }
         }
     }
@@ -112,7 +113,7 @@ bool Board::pieceAtBitboard(uint64_t bitboard, Piece* piece) {
 }
 
 
-std::unordered_set<uint64_t> Board::pieces(PieceType pieceType, Color color) {
+std::vector<uint64_t> Board::pieces(PieceType pieceType, Color color) {
     uint64_t bitboard = this->piecesBitboards[color][pieceType];
     return serializeBitboard(bitboard);
 }
@@ -127,7 +128,7 @@ uint64_t Board::getColorBitboard(Color color){
     return colorBitboard;
 }
 
-std::unordered_set<Move, MoveHash> Board::generateColorMoves(uint64_t colorBitboard, uint64_t opponentColorBitboard, uint64_t globalBitboard, Color color, std::unordered_set<Move, MoveHash>* opponentLegalMovesPtr) {
+std::vector<Move> Board::generateColorMoves(uint64_t colorBitboard, uint64_t opponentColorBitboard, uint64_t globalBitboard, Color color, std::vector<Move>* opponentLegalMovesPtr) {
     inCheck = false;
     uint kingAttackers = 0;
     uint64_t kingAttackerBitboard;
@@ -161,12 +162,12 @@ std::unordered_set<Move, MoveHash> Board::generateColorMoves(uint64_t colorBitbo
         }
     }
 
-    std::unordered_set<Move, MoveHash> moves;
+    std::vector<Move> moves;
 
     if (kingAttackers <=1) {
         for (int pieceType=0; pieceType<6; pieceType++){
             for (uint64_t pieceBitboard : pieces((PieceType) pieceType, color)){
-                std::unordered_set<Move, MoveHash> piece_moves;
+                std::vector<Move> piece_moves;
                 switch (pieceType) {
                     case Pawn: piece_moves = generatePawnMoves(pieceBitboard, globalBitboard, colorBitboard, opponentColorBitboard, color); break;
                     case Knight: piece_moves = generateKnightMoves(pieceBitboard, globalBitboard, colorBitboard, opponentColorBitboard, color); break;
@@ -176,7 +177,8 @@ std::unordered_set<Move, MoveHash> Board::generateColorMoves(uint64_t colorBitbo
                     case Bishop: piece_moves = generateSlidingPiecesMoves(pieceBitboard, bishopDirections, globalBitboard, colorBitboard, opponentColorBitboard, color); break;
                 }
                 if (kingAttackers == 1 && pieceType != King) piece_moves = removeNonKingProtectionMove(piece_moves, kingProtectionSquare);
-                moves.merge(removeNonLegalMove(piece_moves, pieceBitboard, (PieceType) pieceType));
+                std::vector<Move> legalMove = removeNonLegalMove(piece_moves, pieceBitboard, (PieceType) pieceType);
+                moves.insert(moves.begin(), legalMove.begin(), legalMove.end());
             }
         }
     } else {
@@ -185,28 +187,28 @@ std::unordered_set<Move, MoveHash> Board::generateColorMoves(uint64_t colorBitbo
     return moves;
 }
 
- std::unordered_set<Move, MoveHash> Board::removeNonKingProtectionMove(std::unordered_set<Move, MoveHash> moves, uint64_t kingProtectionSquare) {
-     std::unordered_set<Move, MoveHash> legalMoves;
+ std::vector<Move> Board::removeNonKingProtectionMove(std::vector<Move> moves, uint64_t kingProtectionSquare) {
+     std::vector<Move> legalMoves;
      for (Move move: moves) {
-         if (move.to & kingProtectionSquare) legalMoves.insert(move);
+         if (move.to & kingProtectionSquare) legalMoves.push_back(move);
      }
      return legalMoves;
  }
 
- std::unordered_set<Move, MoveHash> Board::removeNonLegalMove(std::unordered_set<Move, MoveHash> moves, uint64_t pieceBitboard, PieceType pieceType) {
+ std::vector<Move> Board::removeNonLegalMove(std::vector<Move> moves, uint64_t pieceBitboard, PieceType pieceType) {
      PinnedPiece searchPinnedPiece = PinnedPiece();
-     searchPinnedPiece.square = log2(pieceBitboard);
+     searchPinnedPiece.square = reverseBitscan(pieceBitboard);
 
-     std::unordered_set<PinnedPiece, PinnedPieceHash>::iterator pinnedPieceItr = pinnedPieces.find(searchPinnedPiece);
+     std::vector<PinnedPiece>::iterator pinnedPieceItr = std::find(pinnedPieces.begin(), pinnedPieces.end(), searchPinnedPiece);
      if (pinnedPieceItr == pinnedPieces.end()) return moves;
 
-     std::unordered_set<Move, MoveHash> legalMoves;
+     std::vector<Move> legalMoves;
      if (pieceType == Knight) return legalMoves;
 
      Direction pinnedDirection = pinnedPieceItr->direction;
      Direction complementaryPinnedDirection = (pinnedDirection > 4) ? Direction (pinnedDirection - 4) : Direction (pinnedDirection + 4);
      for (Move move: moves)
-         if (move.direction == pinnedDirection || move.direction == complementaryPinnedDirection) legalMoves.insert(move);
+         if (move.direction == pinnedDirection || move.direction == complementaryPinnedDirection) legalMoves.push_back(move);
 
      return legalMoves;
 }
@@ -288,4 +290,3 @@ Board::Board(std::string fen) {
     initRayAttack();
     generateMoves();
 }
-

@@ -11,11 +11,11 @@ class Ai {
     private:
         int negaMax(Board board, int alpha, int beta, int depth, Move* move);
         int quiesce(Board board, int alpha, int beta, int depth);
-        std::list<std::pair<Move, int>> orderMove(Board board, std::unordered_set<Move, MoveHash> moves);
+        std::vector<std::pair<Move, int>> orderMove(Board board, std::vector<Move> moves);
         int getPieceValue(PieceType pieceType);
         TranspositionTable transpositionTable;
         void cleanMetrics();
-        int getPiecesBonus(PieceType pieceType, Color color, std::unordered_set<uint64_t> piecesBitboards);
+        int getPiecesBonus(PieceType pieceType, Color color, std::vector<uint64_t> piecesBitboards);
         int transposeSquareForBonus(int square, Color color);
 
         int pawnSquareBonus[64] = {

@@ -27,19 +27,22 @@ int Ai::transposeSquareForBonus(int square, Color color) {
     return index;
 }
 
-int Ai::getPiecesBonus(PieceType pieceType, Color color, std::unordered_set<uint64_t> bitboards) {
+int Ai::getPiecesBonus(PieceType pieceType, Color color, std::vector<uint64_t> bitboards) {
     int bonus = 0;
+    int* bonusArray;
+
+    switch (pieceType) {
+        case King: bonusArray = kingSquareBonus; break;
+        case Queen: bonusArray = queenSquareBonus; break;
+        case Rook: bonusArray = rookSquareBonus; break;
+        case Bishop: bonusArray = bishopSquareBonus; break;
+        case Knight: bonusArray = knightSquareBonus; break;
+        case Pawn: bonusArray = pawnSquareBonus; break;
+    }
     for (uint64_t bitboard: bitboards) {
-        int square = log2(bitboard);
+        int square = reverseBitscan(bitboard);
         int bonusIndex = transposeSquareForBonus(square, color);
-        switch (pieceType) {
-            case King: bonus += kingSquareBonus[bonusIndex]; break;
-            case Queen: bonus += queenSquareBonus[bonusIndex]; break;
-            case Rook: bonus += rookSquareBonus[bonusIndex]; break;
-            case Bishop: bonus += bishopSquareBonus[bonusIndex]; break;
-            case Knight: bonus += knightSquareBonus[bonusIndex]; break;
-            case Pawn: bonus += pawnSquareBonus[bonusIndex]; break;
-        }
+        bonus += bonusArray[bonusIndex];
     }
     return bonus;
 }

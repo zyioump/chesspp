@@ -4,7 +4,10 @@ using std::chrono::high_resolution_clock;
 
 int Ai::quiesce(Board board, int alpha, int beta, int depth) {
     metrics["Evaluation num"]++;
+    auto start = high_resolution_clock::now();
     int currentScore = evaluate(board);
+    auto stop = high_resolution_clock::now();
+    metrics["Evaluation time"] += (stop - start).count() * 1e-9;
     /* return currentScore; */
 
     if (depth == 0) return currentScore;
@@ -12,7 +15,7 @@ int Ai::quiesce(Board board, int alpha, int beta, int depth) {
     if (currentScore >= beta) return beta;
     if (alpha < currentScore) alpha = currentScore;
 
-    std::list<std::pair<Move, int>> legalMoves = orderMove(board, board.legalMoves);
+    std::vector<std::pair<Move, int>> legalMoves = orderMove(board, board.legalMoves);
 
     for (auto moveScore: legalMoves) {
         Move move = moveScore.first;
@@ -21,9 +24,17 @@ int Ai::quiesce(Board board, int alpha, int beta, int depth) {
         Piece attackedPiece;
         if (!board.pieceAtBitboard(move.to, &attackedPiece)) continue;
 
+        auto start = high_resolution_clock::now();
         board.push(move);
+        auto stop = high_resolution_clock::now();
+        metrics["Push time"] += (stop - start).count() * 1e-9;
+
         int score = -quiesce(board, -beta, -alpha, depth-1);
+
+        start = high_resolution_clock::now();
         board.pop();
+        stop = high_resolution_clock::now();
+        metrics["Pop time"] += (stop - start).count() * 1e-9;
 
         if (score >= beta) return beta;
         if (score > alpha) alpha = score;
@@ -32,7 +43,13 @@ int Ai::quiesce(Board board, int alpha, int beta, int depth) {
 }
 
 int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr) {
-    if (depth == 0 || board.legalMoves.size() == 0) return quiesce(board, alpha, beta, maxQuiesceDepth);
+    if (depth == 0 || board.legalMoves.size() == 0) {
+        auto start = high_resolution_clock::now();
+        int score = quiesce(board, alpha, beta, maxQuiesceDepth);
+        auto stop = high_resolution_clock::now();
+        metrics["Quiesce time"] += (stop - start).count() * 1e-9;
+        return score;
+    }
 
     int alphaOrig = alpha;
 
@@ -60,15 +77,23 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr) 
     int score=std::numeric_limits<int>::min();
     Move bestMove;
 
-    std::list<std::pair<Move, int>> legalMoves = orderMove(board, board.legalMoves);
+    std::vector<std::pair<Move, int>> legalMoves = orderMove(board, board.legalMoves);
 
     for (auto moveScore: legalMoves) {
         Move move = moveScore.first;
         if (move.defend) continue;
 
+        auto start = high_resolution_clock::now();
         board.push(move);
+        auto stop = high_resolution_clock::now();
+        metrics["Push time"] += (stop - start).count() * 1e-9;
+
         score = -negaMax(board, -beta, -alpha, depth-1, nullptr);
+
+        start = high_resolution_clock::now();
         board.pop();
+        stop = high_resolution_clock::now();
+        metrics["Pop time"] += (stop - start).count() * 1e-9;
 
         if (score > alpha) {
             bestMove = move;
@@ -93,8 +118,9 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr) 
     return alpha;
 }
 
-std::list<std::pair<Move, int>> Ai::orderMove(Board board, std::unordered_set<Move, MoveHash> moves) {
-    std::list<std::pair<Move, int>> movesList;
+std::vector<std::pair<Move, int>> Ai::orderMove(Board board, std::vector<Move> moves) {
+    auto start = high_resolution_clock::now();
+    std::vector<std::pair<Move, int>> movesList;
 
     for (Move move: moves) {
         int score = 0;
@@ -120,9 +146,12 @@ std::list<std::pair<Move, int>> Ai::orderMove(Board board, std::unordered_set<Mo
         movesList.push_back(std::make_pair(move, score));
     }
 
-    movesList.sort([&](auto a, auto b) {
+    std::sort(movesList.begin(), movesList.end(), [&](auto a, auto b) {
             return a.second > b.second;
     });
+
+    auto stop = high_resolution_clock::now();
+    metrics["Order time"] += (stop - start).count() * 1e-9;
     return movesList;
 }
 

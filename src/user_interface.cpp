@@ -40,9 +40,9 @@ void UserInterface::displayBoard(Board board, Ai ai) {
 
     for (int color=0; color<=1; color++) {
         for (int piece_type=0; piece_type<6; piece_type++){
-            std::unordered_set<uint64_t> piece_bitboards = board.pieces((PieceType) piece_type, (Color) color);
+            std::vector<uint64_t> piece_bitboards = board.pieces((PieceType) piece_type, (Color) color);
             for (uint64_t bitboard : piece_bitboards) {
-                uint square = log2(bitboard);
+                uint square = reverseBitscan(bitboard);
                 int col = square % 8;
                 int row = (square - col) / 8;
 
@@ -61,7 +61,7 @@ void UserInterface::displayBoard(Board board, Ai ai) {
 
         filledCircleRGBA(renderer, (i+0.5) * squareSize, (j+0.5) * squareSize, squareSize/8, 200, 200, 200, 255);
 
-        std::unordered_set<uint>::iterator ite;
+        std::vector<uint>::iterator ite;
         for (ite=highlighted_moves.begin(); ite!=highlighted_moves.end(); ite++){
             i = *ite%8;
             j = (7 - (*ite - i) / 8);
@@ -171,7 +171,7 @@ UIFlag UserInterface::chessClick(SDL_Event e, Board board, Move* move) {
     uint j = 7 - (e.button.y / squareSize);
     uint square = i + 8*j;
 
-    if (highlighted_moves.find(square) != highlighted_moves.end()) {
+    if (std::find(highlighted_moves.begin(), highlighted_moves.end(), square) != highlighted_moves.end()) {
         move->from = (uint64_t) 1 << highlighted_square;
         move->to = (uint64_t) 1 << square;
         clearHighlight();
@@ -184,10 +184,10 @@ UIFlag UserInterface::chessClick(SDL_Event e, Board board, Move* move) {
     if (board.pieceAt(square, &piece)){
         highlighted_square = square;
 
-        std::unordered_set<Move, MoveHash>::iterator ite;
+        std::vector<Move>::iterator ite;
 
         for (ite = board.legalMoves.begin(); ite != board.legalMoves.end(); ite++) {
-            if (log2(ite->from) == square && !ite->defend) highlighted_moves.insert(log2(ite->to));
+            if (reverseBitscan(ite->from) == square && !ite->defend) highlighted_moves.push_back(reverseBitscan(ite->to));
         }
     }
     return NONE;

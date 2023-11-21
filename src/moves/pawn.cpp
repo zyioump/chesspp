@@ -1,7 +1,7 @@
 #include <board.hpp>
 
-std::unordered_set<Move, MoveHash> Board::generatePawnMoves(uint64_t bitboard, uint64_t globalBitboard, uint64_t colorBitboard, uint64_t opponentColorBitboard, Color color) {
-    std::unordered_set<Move, MoveHash> moves;
+std::vector<Move> Board::generatePawnMoves(uint64_t bitboard, uint64_t globalBitboard, uint64_t colorBitboard, uint64_t opponentColorBitboard, Color color) {
+    std::vector<Move> moves;
 
     // Move 
     uint basePawnRow = (color == White) ? 1 : 6;
@@ -32,15 +32,15 @@ std::unordered_set<Move, MoveHash> Board::generatePawnMoves(uint64_t bitboard, u
         uint64_t toAnotherPiece = toBitboard & globalBitboard;
         if (toAnotherPiece != 0) break;
 
-        moves.insert(createMove(bitboard, toBitboard, promotion, false, false, false, false, direction));
+        moves.push_back(createMove(bitboard, toBitboard, promotion, false, false, false, false, direction));
     }
 
     uint64_t enPassantAttackerRowMask = (uint64_t) 0xFF << 8*((color == White) ? 4 : 3);
     if (enPassantCol >= 0 && bitboard & enPassantAttackerRowMask) {
-        uint bitboardCol = (uint) log2(bitboard) & 7;
+        uint bitboardCol = reverseBitscan(bitboard) & 7;
         if (std::abs(int (bitboardCol - enPassantCol)) == 1) {
             uint64_t enPassantAttackBitboard = (uint64_t) 1 << (8*((color == White) ? 5 : 2) + enPassantCol);
-            moves.insert(createMove(bitboard, enPassantAttackBitboard, false, true, false, false, true, (color == White) ? No : So));
+            moves.push_back(createMove(bitboard, enPassantAttackBitboard, false, true, false, false, true, (color == White) ? No : So));
         }
     }
 
@@ -54,18 +54,18 @@ std::unordered_set<Move, MoveHash> Board::generatePawnMoves(uint64_t bitboard, u
     // Attack
     if (color == White) {
         uint64_t noEaBitboard = noEaOne(bitboard);
-        if (noEaBitboard & opponentColorBitboard) moves.insert(createMove(bitboard, noEaBitboard, promotion, true, false, false, false, NoEa));
-        if (noEaBitboard) moves.insert(createMove(bitboard, noEaBitboard, promotion, true, true, false, false, NoEa));
+        if (noEaBitboard & opponentColorBitboard) moves.push_back(createMove(bitboard, noEaBitboard, promotion, true, false, false, false, NoEa));
+        if (noEaBitboard) moves.push_back(createMove(bitboard, noEaBitboard, promotion, true, true, false, false, NoEa));
         uint64_t noWeBitboard = noWeOne(bitboard);
-        if (noWeBitboard & opponentColorBitboard) moves.insert(createMove(bitboard, noWeBitboard, promotion, true, false, false, false, NoWe));
-        if (noWeBitboard) moves.insert(createMove(bitboard, noWeBitboard, promotion, true, true, false, false, NoWe));
+        if (noWeBitboard & opponentColorBitboard) moves.push_back(createMove(bitboard, noWeBitboard, promotion, true, false, false, false, NoWe));
+        if (noWeBitboard) moves.push_back(createMove(bitboard, noWeBitboard, promotion, true, true, false, false, NoWe));
     } else {
         uint64_t soEaBitboard = soEaOne(bitboard);
-        if (soEaBitboard & opponentColorBitboard) moves.insert(createMove(bitboard, soEaBitboard, promotion, true, false, false, false, SoEa));
-        if (soEaBitboard) moves.insert(createMove(bitboard, soEaBitboard, promotion, true, true, false, false, SoEa));
+        if (soEaBitboard & opponentColorBitboard) moves.push_back(createMove(bitboard, soEaBitboard, promotion, true, false, false, false, SoEa));
+        if (soEaBitboard) moves.push_back(createMove(bitboard, soEaBitboard, promotion, true, true, false, false, SoEa));
         uint64_t soWeBitboard = soWeOne(bitboard);
-        if (soWeBitboard & opponentColorBitboard) moves.insert(createMove(bitboard, soWeBitboard, promotion, true, false, false, false, SoWe));
-        if (soWeBitboard) moves.insert(createMove(bitboard, soWeBitboard, promotion, true, true, false, false, SoWe));
+        if (soWeBitboard & opponentColorBitboard) moves.push_back(createMove(bitboard, soWeBitboard, promotion, true, false, false, false, SoWe));
+        if (soWeBitboard) moves.push_back(createMove(bitboard, soWeBitboard, promotion, true, true, false, false, SoWe));
     }
 
     return moves;

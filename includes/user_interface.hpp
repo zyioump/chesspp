@@ -1,7 +1,7 @@
 #ifndef UserInterface_H
 #define UserInterface_H
 
-#include <unordered_set>
+#include <vector>
 #include <math.h>
 #include <string>
 
@@ -30,7 +30,7 @@ class UserInterface {
         int squareSize = chessSize / 8;
         int piece_texture_size;
         int highlighted_square = -1;
-        std::unordered_set<uint> highlighted_moves;
+        std::vector<uint> highlighted_moves;
         void clearHighlight();
         void displayDebug(Board board, Ai ai);
         SDL_Rect drawCastling(Board board, int x, int y);

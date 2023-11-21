@@ -3,7 +3,7 @@
 
 #include <cstdint>
 #include <iostream>
-#include <unordered_set>
+#include <vector>
 #include <map>
 #include <math.h>
 
@@ -83,28 +83,14 @@ struct PinnedPiece {
     bool operator==(const PinnedPiece pinnedPiece) const {return square == pinnedPiece.square;};
 };
 
-class PinnedPieceHash {
-    public:
-        uint operator()(const PinnedPiece pinnedPiece) const {
-            return pinnedPiece.square;
-        }
-};
-
-class MoveHash {
-    public:
-        uint64_t operator()(const Move move) const {
-            return move.from ^ move.to;
-        }
-};
-
 struct BoardSnapshot {
     Move move;
     bool castling[2][2];
     Color turn;
     int enPassantCol;
     uint64_t piecesBitboards[2][6];
-    std::unordered_set<Move, MoveHash> legalMoves;
-    std::unordered_set<Move, MoveHash> opponentLegalMoves;
+    std::vector<Move> legalMoves;
+    std::vector<Move> opponentLegalMoves;
     uint64_t zobrist;
 };
 
@@ -132,7 +118,7 @@ uint64_t colMask(int square);
 uint64_t diagonalMask(int square);
 uint64_t antiDiagonalMask(int square);
 
-std::unordered_set<uint64_t> serializeBitboard(uint64_t bitboard);
+std::vector<uint64_t> serializeBitboard(uint64_t bitboard);
 uint forwardBitscan(uint64_t bitboard);
 uint reverseBitscan(uint64_t bitboard);
 

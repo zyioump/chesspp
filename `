@@ -22,7 +22,7 @@ class Board {
         std::vector<Direction> rookDirections = {No, So, Ea, We};
         std::vector<Direction> bishopDirections = {NoEa, NoWe, SoEa, SoWe};
 
-        std::vector<PinnedPiece> pinnedPieces;
+        std::vector<PinnedPiece, PinnedPieceHash> pinnedPieces;
 
         void generateMoves();
         std::vector<Move> generateColorMoves(uint64_t colorBitboard, uint64_t opponentColorBitboard, uint64_t globalBitboard, Color color, std::vector<Move>* opponentLegalAttackPtr);
@@ -41,7 +41,6 @@ class Board {
         std::vector<Move> opponentLegalMoves;
 
         bool inCheck = false;
-        int enPassantCol = -1;
         bool castling[2][2] = {0};
         Color turn = White;
 

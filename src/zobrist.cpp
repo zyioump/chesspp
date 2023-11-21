@@ -25,9 +25,9 @@ uint64_t Zobrist::getZobrist(uint64_t piecesBitboards[2][6], bool castling[2][2]
 
     for (int color=0; color<2; color++)
         for (int pieceType=0; pieceType<6; pieceType++) {
-            std::unordered_set<uint64_t> bitboards = serializeBitboard(piecesBitboards[color][pieceType]);
+            std::vector<uint64_t> bitboards = serializeBitboard(piecesBitboards[color][pieceType]);
             for (uint64_t bitboard: bitboards)
-                zobrist ^= piecesZobrist[color][pieceType][(int) log2(bitboard)];
+                zobrist ^= piecesZobrist[color][pieceType][reverseBitscan(bitboard)];
         }
 
     zobrist ^= castlingZobrist[White][int (castling[White][0]) + (int (castling[White][1]) << 1)];
@@ -44,8 +44,8 @@ uint64_t Zobrist::getZobrist(uint64_t piecesBitboards[2][6], bool castling[2][2]
 uint64_t Zobrist::updateZobrist(uint64_t zobrist, bool oldCastling[2][2], int oldEnPassantCol, bool castling[2][2], int enPassantCol, Piece fromPiece, Piece toPiece, bool toPieceExist, Color newColor, Move move) {
     zobrist ^= int (!newColor) * sideZobrist;
 
-    int toSquare = log2(move.to);
-    int fromSquare = log2(move.from);
+    int toSquare = reverseBitscan(move.to);
+    int fromSquare = reverseBitscan(move.from);
 
     if (toPieceExist)
         zobrist ^= piecesZobrist[newColor][toPiece.pieceType][toSquare];
