@@ -3,14 +3,14 @@
 
 #include <string>
 #include <iostream>
-#include <bitset>
 #include <math.h>
 #include <unordered_set>
 #include <cstdint>
 #include <map>
 #include <list>
 
-#include <utils.hpp>
+#include "utils.hpp"
+#include "zobrist.hpp"
 
 class Board {
     private:
@@ -34,7 +34,8 @@ class Board {
         std::unordered_set<Move, MoveHash> generateKnightMoves(uint64_t bitboard, uint64_t globalBitboard, uint64_t colorBitboard, uint64_t opponentColorBitboard, Color color);
         std::unordered_set<Move, MoveHash> generateKingMoves(uint64_t bitboard, uint64_t globalBitboard, uint64_t colorBitboard, uint64_t opponentColorBitboard, uint64_t attackedSquare, Direction attackerDirection, Color color);
         std::unordered_set<Move, MoveHash> generateSlidingPiecesMoves(uint64_t bitboard, std::unordered_set<Direction> rayDirections, uint64_t globalBitboard, uint64_t colorBitboard, uint64_t opponentColorBitboard, Color color);
-        
+        Zobrist zobristHelper;
+
     public:
         std::unordered_set<Move, MoveHash> legalMoves;
         std::unordered_set<Move, MoveHash> opponentLegalMoves;
@@ -44,6 +45,8 @@ class Board {
         bool castling[2][2] = {0};
         Color turn = White;
 
+        uint64_t zobrist;
+
         bool push(Move move);
         void pop();
 
@@ -52,6 +55,5 @@ class Board {
         bool pieceAt(uint square, Piece* piece);
         bool pieceAtBitboard(uint64_t bitboard, Piece* piece);
         Board(std::string fen);
-        Board();
 };
 #endif

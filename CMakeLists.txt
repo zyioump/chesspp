@@ -21,6 +21,10 @@ add_executable(${PROJECT_NAME}
     src/moves/king.cpp
     src/moves/slidingPieces.cpp
     src/utils.cpp
+    src/ai/ai.cpp
+    src/ai/evaluation.cpp
+    src/zobrist.cpp
+    src/transposition_table.cpp
 )  
 
 target_link_libraries(${PROJECT_NAME} SDL2::Main SDL2::Image SDL2::GFX SDL2::TTF)

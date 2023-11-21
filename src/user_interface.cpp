@@ -25,7 +25,7 @@ UserInterface::UserInterface() {
     piece_texture_size = textureWidth / 6;
 }
 
-void UserInterface::displayBoard(Board board) {
+void UserInterface::displayBoard(Board board, Ai ai) {
     for (int i=0; i<8; i++) {
         for (int j=0; j<8; j++) {
             if ((i+j) % 2 == 0)
@@ -69,7 +69,7 @@ void UserInterface::displayBoard(Board board) {
         }
     }
 
-    displayDebug(board);
+    displayDebug(board, ai);
     
     SDL_RenderPresent(renderer);
 }
@@ -114,7 +114,28 @@ SDL_Rect UserInterface::drawCastling(Board board, int x, int y) {
     return textRect;
 }
 
-void UserInterface::displayDebug(Board board) {
+SDL_Rect UserInterface::drawMetrics(std::map<std::string, float> metrics, int y) {
+    SDL_Rect metricRect;
+    metricRect.y = y;
+    metricRect.x = chessSize + margin;
+    metricRect.w = debugSize - margin;
+
+    int i=0;
+    for (auto metric: metrics) {
+        std::ostringstream metricStream;
+        metricStream << metric.first << " : ";
+        metricStream << std::fixed << std::setprecision((floor(metric.second) == metric.second) ? 0 : 2);
+        metricStream << metric.second;
+        SDL_Rect textRect = writeText(metricStream.str(), (i%2) ? (chessSize + debugSize/2 + margin) : chessSize + margin, y, textColor);
+        if (i%2) y += textRect.h + margin;
+        i++;
+    }
+
+    metricRect.h = y - metricRect.y;
+    return metricRect;
+}
+
+void UserInterface::displayDebug(Board board, Ai ai) {
     SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
     SDL_Rect rect = {chessSize, 0, debugSize, chessSize};
     SDL_RenderFillRect(renderer, &rect);
@@ -129,6 +150,20 @@ void UserInterface::displayDebug(Board board) {
     else SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_Rect turnIndicatorRect = {turnTextRect.x + turnTextRect.w + 2*margin, turnTextRect.y, turnTextRect.h, turnTextRect.h};
     SDL_RenderFillRect(renderer, &turnIndicatorRect);
+
+    std::string evaluationText = "Eval : " + std::to_string(ai.evaluate(board));
+    SDL_Rect evaluationRect = writeText(evaluationText, turnIndicatorRect.x + turnIndicatorRect.w + 2*margin, turnIndicatorRect.y, textColor);
+
+    std::string maxDepthText = "Depth : " + std::to_string(ai.maxDepth);
+    SDL_Rect maxDepthRect = writeText(maxDepthText, castlingRect.x, castlingRect.y + castlingRect.h /*+ margin*/, textColor);
+
+    std::string maxQuiesceDepthText = "Quiesce depth : " + std::to_string(ai.maxQuiesceDepth);
+    SDL_Rect maxQuiesceDepthRect = writeText(maxQuiesceDepthText, maxDepthRect.x + maxDepthRect.w + 2*margin, maxDepthRect.y, textColor);
+
+    std::string zobristText = "Zobrist : " + std::to_string(board.zobrist);
+    SDL_Rect zobristRect = writeText(zobristText, maxDepthRect.x, maxDepthRect.y + maxDepthRect.h + margin, textColor);
+
+    SDL_Rect metricsRect = drawMetrics(ai.metrics, zobristRect.y + zobristRect.h + margin);
 }
 
 UIFlag UserInterface::chessClick(SDL_Event e, Board board, Move* move) {
@@ -158,8 +193,8 @@ UIFlag UserInterface::chessClick(SDL_Event e, Board board, Move* move) {
     return NONE;
 }
 
-UIFlag UserInterface::play(Board board, Move* move) {
-    displayBoard(board);
+UIFlag UserInterface::play(Board board, Ai ai, Move* move) {
+    displayBoard(board, ai);
     while (true) {
         SDL_Event e;
         if (SDL_WaitEvent(&e)) {
@@ -173,7 +208,7 @@ UIFlag UserInterface::play(Board board, Move* move) {
                     return POP;
                 }
                 else clearHighlight();
-                displayBoard(board);
+                displayBoard(board, ai);
             }
         }
     }
@@ -185,7 +220,7 @@ void UserInterface::clearHighlight() {
     highlighted_moves.clear();
 }
 
-void UserInterface::free_memory() {
+void UserInterface::freeMemory() {
     SDL_DestroyTexture(piece_set_texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

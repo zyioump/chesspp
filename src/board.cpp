@@ -14,6 +14,7 @@ bool Board::push(Move move) {
     snapshot.turn = turn;
     snapshot.move = move;
     snapshot.enPassantCol = enPassantCol;
+    snapshot.zobrist = zobrist;
     std::copy(std::begin(castling[0]), std::end(castling[0]), std::begin(snapshot.castling[0]));
     std::copy(std::begin(castling[1]), std::end(castling[1]), std::begin(snapshot.castling[1]));
     std::copy(std::begin(piecesBitboards[0]), std::end(piecesBitboards[0]), std::begin(snapshot.piecesBitboards[0]));
@@ -22,7 +23,7 @@ bool Board::push(Move move) {
     snapshot.opponentLegalMoves = opponentLegalMoves;
     moveStack.push_back(snapshot);
 
-    // Castling allowed ?
+    // Update castling possibilities
     if (fromPiece.pieceType == King) {
         castling[fromPiece.color][QueenSide] = 0;
         castling[fromPiece.color][KingSide] = 0;
@@ -32,7 +33,8 @@ bool Board::push(Move move) {
     }
 
     Piece toPiece;
-    if (pieceAtBitboard(move.to, &toPiece))
+    bool toPieceExist = pieceAtBitboard(move.to, &toPiece);
+    if (toPieceExist)
         piecesBitboards[toPiece.color][toPiece.pieceType] ^= move.to;
 
     // Process Castling
@@ -66,6 +68,9 @@ bool Board::push(Move move) {
     }
 
     turn = (Color) !turn;
+
+    zobrist = zobristHelper.updateZobrist(snapshot.zobrist, snapshot.castling, snapshot.enPassantCol, castling, enPassantCol, fromPiece, toPiece, toPieceExist, turn, move);
+
     generateMoves();
     return true;
 }
@@ -84,6 +89,7 @@ void Board::pop() {
     std::copy(std::begin(snapshot.piecesBitboards[1]), std::end(snapshot.piecesBitboards[1]), std::begin(piecesBitboards[1]));
     legalMoves = snapshot.legalMoves;
     opponentLegalMoves = snapshot.opponentLegalMoves;
+    zobrist = snapshot.zobrist;
 }
 
 bool Board::pieceAt(uint square, Piece* piece) {
@@ -255,7 +261,7 @@ Board::Board(std::string fen) {
                 case 'p': pieceType = Pawn; break;
             }
 
-            uint64_t bitboard = (uint64_t) 1 << col + 8*row;
+            uint64_t bitboard = (uint64_t) 1 << (col + 8*row);
             this->piecesBitboards[color][pieceType] ^= bitboard;
 
             col++;
@@ -276,6 +282,9 @@ Board::Board(std::string fen) {
             if (isDigit) this->enPassantCol = (int) c - (int) '0';
         }
     }
+
+    zobrist = zobristHelper.getZobrist(piecesBitboards, castling, enPassantCol, turn);
+
     initRayAttack();
     generateMoves();
 }

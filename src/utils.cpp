@@ -163,3 +163,12 @@ uint64_t antiDiagonalMask(int square) {
     int south = diag & (-diag >> 31);
     return (mainDiagonal >> south) << north;
 }
+
+void bitboardToSquareName(uint64_t bitboard, char* squareName) {
+    uint square = log2(bitboard);
+    uint col = square % 8;
+    uint row = (square - col) / 8;
+
+    squareName[0] = char ('A' + col);
+    squareName[1] = char ('1' + row);
+}

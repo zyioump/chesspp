@@ -9,8 +9,10 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <SDL2/SDL_ttf.h>
+#include <iomanip>
 
 #include "board.hpp"
+#include "ai.hpp"
 
 enum UIFlag {
     QUIT,
@@ -30,8 +32,9 @@ class UserInterface {
         int highlighted_square = -1;
         std::unordered_set<uint> highlighted_moves;
         void clearHighlight();
-        void displayDebug(Board board);
+        void displayDebug(Board board, Ai ai);
         SDL_Rect drawCastling(Board board, int x, int y);
+        SDL_Rect drawMetrics(std::map<std::string, float> metrics, int x);
 
         TTF_Font* font;
         SDL_Color textColor = {255, 255, 255};
@@ -45,8 +48,8 @@ class UserInterface {
 
     public:
         UserInterface();
-        void displayBoard(Board board);
-        UIFlag play(Board board, Move* move);
-        void free_memory();
+        void displayBoard(Board board, Ai ai);
+        UIFlag play(Board board, Ai ai, Move* move);
+        void freeMemory();
 };
 #endif

@@ -52,6 +52,17 @@ struct Move {
     // Should be ok to ignore attack, defend and promotion for equality or hashing
     // Not sure
     bool operator==(const Move move) const {return from == move.from && to == move.to;};
+    Move operator=(const Move move) {
+        from = move.from;
+        to = move.to;
+        attack = move.attack;
+        promotion = move.promotion;
+        defend = move.defend;
+        castling = move.castling;
+        enPassant = move.enPassant;
+        direction = move.direction;
+        return *this;
+    }
 };
 
 struct Piece {
@@ -94,6 +105,7 @@ struct BoardSnapshot {
     uint64_t piecesBitboards[2][6];
     std::unordered_set<Move, MoveHash> legalMoves;
     std::unordered_set<Move, MoveHash> opponentLegalMoves;
+    uint64_t zobrist;
 };
 
 extern uint64_t noHCol;
@@ -123,4 +135,6 @@ uint64_t antiDiagonalMask(int square);
 std::unordered_set<uint64_t> serializeBitboard(uint64_t bitboard);
 uint forwardBitscan(uint64_t bitboard);
 uint reverseBitscan(uint64_t bitboard);
+
+void bitboardToSquareName(uint64_t bitboard, char* squareName);
 #endif
