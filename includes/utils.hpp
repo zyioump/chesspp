@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <map>
 #include <math.h>
@@ -122,5 +123,5 @@ std::vector<uint64_t> serializeBitboard(uint64_t bitboard);
 uint forwardBitscan(uint64_t bitboard);
 uint reverseBitscan(uint64_t bitboard);
 
-void bitboardToSquareName(uint64_t bitboard, char* squareName);
+std::string bitboardToSquareName(uint64_t bitboard);
 #endif

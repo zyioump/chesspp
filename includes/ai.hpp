@@ -11,12 +11,18 @@ class Ai {
     private:
         int negaMax(Board board, int alpha, int beta, int depth, Move* move);
         int quiesce(Board board, int alpha, int beta, int depth);
+        int see(Board board, uint64_t bitboard, int pieceValue);
+        int seeCapture(Board board, Move move);
+
         std::vector<std::pair<Move, int>> orderMove(Board board, std::vector<Move> moves);
         int getPieceValue(PieceType pieceType);
         TranspositionTable transpositionTable;
         void cleanMetrics();
-        int getPiecesBonus(PieceType pieceType, Color color, std::vector<uint64_t> piecesBitboards);
+        int getPiecesBonus(PieceType pieceType, Color color, std::vector<uint64_t> piecesBitboards, bool endGame);
         int transposeSquareForBonus(int square, Color color);
+
+        bool timeLimitExceded = false;
+        std::chrono::high_resolution_clock::time_point moveStartTime;
 
         int pawnSquareBonus[64] = {
             0,  0,  0,  0,  0,  0,  0,  0,
@@ -90,10 +96,11 @@ class Ai {
         };
 
     public:
-        const int maxDepth = 4;
-        const int maxQuiesceDepth = 12;
+        const int maxDepth = 7;
+        const int maxQuiesceDepth = 8;
+        const int timeLimit = 30;
         Move play(Board board);
-        int evaluate(Board board);
+        std::pair<int, bool> evaluate(Board board);
         void freeMemory();
         std::map<std::string, float> metrics;
 };

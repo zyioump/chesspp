@@ -151,14 +151,18 @@ void UserInterface::displayDebug(Board board, Ai ai) {
     SDL_Rect turnIndicatorRect = {turnTextRect.x + turnTextRect.w + 2*margin, turnTextRect.y, turnTextRect.h, turnTextRect.h};
     SDL_RenderFillRect(renderer, &turnIndicatorRect);
 
-    std::string evaluationText = "Eval : " + std::to_string(ai.evaluate(board));
+    auto evaluation = ai.evaluate(board);
+    std::string evaluationText = "Eval : " + std::to_string(evaluation.first) + ((evaluation.second) ? " E" : "");
     SDL_Rect evaluationRect = writeText(evaluationText, turnIndicatorRect.x + turnIndicatorRect.w + 2*margin, turnIndicatorRect.y, textColor);
 
     std::string maxDepthText = "Depth : " + std::to_string(ai.maxDepth);
-    SDL_Rect maxDepthRect = writeText(maxDepthText, castlingRect.x, castlingRect.y + castlingRect.h /*+ margin*/, textColor);
+    SDL_Rect maxDepthRect = writeText(maxDepthText, castlingRect.x, castlingRect.y + castlingRect.h , textColor);
 
     std::string maxQuiesceDepthText = "Quiesce depth : " + std::to_string(ai.maxQuiesceDepth);
     SDL_Rect maxQuiesceDepthRect = writeText(maxQuiesceDepthText, maxDepthRect.x + maxDepthRect.w + 2*margin, maxDepthRect.y, textColor);
+
+    std::string timeLimitText = "Time limit : " + std::to_string(ai.timeLimit);
+    SDL_Rect timeLimitRect = writeText(timeLimitText, maxQuiesceDepthRect.x + maxQuiesceDepthRect.w + 2*margin, maxDepthRect.y, textColor);
 
     std::string zobristText = "Zobrist : " + std::to_string(board.zobrist);
     SDL_Rect zobristRect = writeText(zobristText, maxDepthRect.x, maxDepthRect.y + maxDepthRect.h + margin, textColor);

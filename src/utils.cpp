@@ -164,11 +164,13 @@ uint64_t antiDiagonalMask(int square) {
     return (mainDiagonal >> south) << north;
 }
 
-void bitboardToSquareName(uint64_t bitboard, char* squareName) {
+std::string bitboardToSquareName(uint64_t bitboard) {
     uint square = reverseBitscan(bitboard);
-    uint col = square % 8;
+    uint col = square & 7;
     uint row = (square - col) / 8;
 
-    squareName[0] = char ('A' + col);
-    squareName[1] = char ('1' + row);
+    std::ostringstream squareStream;
+    squareStream << char ('A' + col) << char ('1' + row);
+
+    return squareStream.str();
 }

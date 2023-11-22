@@ -206,7 +206,7 @@ std::vector<Move> Board::generateColorMoves(uint64_t colorBitboard, uint64_t opp
      if (pieceType == Knight) return legalMoves;
 
      Direction pinnedDirection = pinnedPieceItr->direction;
-     Direction complementaryPinnedDirection = (pinnedDirection > 4) ? Direction (pinnedDirection - 4) : Direction (pinnedDirection + 4);
+     Direction complementaryPinnedDirection = (pinnedDirection >= 4) ? Direction (pinnedDirection - 4) : Direction (pinnedDirection + 4);
      for (Move move: moves)
          if (move.direction == pinnedDirection || move.direction == complementaryPinnedDirection) legalMoves.push_back(move);
 

@@ -5,6 +5,7 @@
 int main(int argc, char *argv[]) {
     Board board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     /* Board board("8/5q2/6n1/8/5P2/8/6P1/2B5 w - - 0 1"); */
+    /* Board board("8/8/8/8/1b6/2P5/8/4K3 w - - 0 1"); */
     UserInterface ui;
     Ai ai;
 

@@ -14,7 +14,6 @@
 
 class Board {
     private:
-        uint64_t piecesBitboards[2][6] = {0};
 
         std::vector<BoardSnapshot> moveStack;
 
@@ -40,6 +39,7 @@ class Board {
         std::vector<Move> legalMoves;
         std::vector<Move> opponentLegalMoves;
 
+        uint64_t piecesBitboards[2][6] = {0};
         bool inCheck = false;
         int enPassantCol = -1;
         bool castling[2][2] = {0};

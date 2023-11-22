@@ -2,10 +2,71 @@
 
 using std::chrono::high_resolution_clock;
 
+int Ai::see(Board board, uint64_t bitboard, int pieceValue) {
+    Move minAttackerMove;
+    int minAttackerValue = std::numeric_limits<int>::max();
+
+    for (Move move: board.legalMoves){
+        if (!move.attack || move.defend) continue;
+        if (move.to != bitboard) continue;
+
+        Piece attacker;
+        board.pieceAtBitboard(move.from, &attacker);
+        
+        int value = getPieceValue(attacker.pieceType);
+        if (value < minAttackerValue) {
+            minAttackerValue = value;
+            minAttackerMove = move;
+        }
+    }
+
+    if (minAttackerValue == std::numeric_limits<int>::max()) return 0;
+
+    auto start = high_resolution_clock::now();
+    board.push(minAttackerMove);
+    auto stop = high_resolution_clock::now();
+    metrics["Push time"] += (stop - start).count() * 1e-9;
+
+    int score = pieceValue - see(board, bitboard, minAttackerValue);
+
+    start = high_resolution_clock::now();
+    board.pop();
+    stop = high_resolution_clock::now();
+    metrics["Pop time"] += (stop - start).count() * 1e-9;
+
+    return score;
+}
+
+int Ai::seeCapture(Board board, Move move) {
+    Piece toPiece;
+    board.pieceAtBitboard(move.to, &toPiece);
+    int toPieceValue = getPieceValue(toPiece.pieceType);
+
+    Piece fromPiece;
+    board.pieceAtBitboard(move.from, &fromPiece);
+    int fromPieceValue = getPieceValue(fromPiece.pieceType);
+
+    auto start = high_resolution_clock::now();
+    board.push(move);
+    auto stop = high_resolution_clock::now();
+    metrics["Push time"] += (stop - start).count() * 1e-9;
+
+    int score = toPieceValue - see(board, move.to, fromPieceValue);
+
+    start = high_resolution_clock::now();
+    board.pop();
+    stop = high_resolution_clock::now();
+    metrics["Pop time"] += (stop - start).count() * 1e-9;
+
+    return score;
+}
+
 int Ai::quiesce(Board board, int alpha, int beta, int depth) {
     metrics["Evaluation num"]++;
     auto start = high_resolution_clock::now();
-    int currentScore = evaluate(board);
+    auto evaluation = evaluate(board);
+    int currentScore = evaluation.first;
+    bool endGame = evaluation.second;
     auto stop = high_resolution_clock::now();
     metrics["Evaluation time"] += (stop - start).count() * 1e-9;
     /* return currentScore; */
@@ -23,6 +84,19 @@ int Ai::quiesce(Board board, int alpha, int beta, int depth) {
 
         Piece attackedPiece;
         if (!board.pieceAtBitboard(move.to, &attackedPiece)) continue;
+        /* std::cout << "Quiesce " << bitboardToSquareName(move.from) << " to " <<  bitboardToSquareName(move.to) << ", depth " << depth << "\n"; */
+
+        if (!endGame) {
+            start = high_resolution_clock::now();
+            int seeScore = seeCapture(board, move);
+            stop = high_resolution_clock::now();
+            metrics["See time"] += (stop - start).count() * 1e-9;
+
+            if (seeScore < 0) {
+                metrics["See skip"]++;
+                continue;
+            }
+        }
 
         auto start = high_resolution_clock::now();
         board.push(move);
@@ -82,6 +156,7 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr) 
     for (auto moveScore: legalMoves) {
         Move move = moveScore.first;
         if (move.defend) continue;
+        /* std::cout << "NegaMax " << bitboardToSquareName(move.from) << " to " <<  bitboardToSquareName(move.to) << ", depth " << depth << "\n"; */
 
         auto start = high_resolution_clock::now();
         board.push(move);
@@ -123,6 +198,7 @@ std::vector<std::pair<Move, int>> Ai::orderMove(Board board, std::vector<Move> m
     std::vector<std::pair<Move, int>> movesList;
 
     for (Move move: moves) {
+        if (timeLimitExceded) break;
         int score = 0;
 
         Piece attackedPiece;
@@ -156,17 +232,31 @@ std::vector<std::pair<Move, int>> Ai::orderMove(Board board, std::vector<Move> m
 }
 
 Move Ai::play(Board board) {
+    timeLimitExceded = false;
+
     Move bestMove;
     bestMove.from = 0;
     bestMove.to = 0;
 
     cleanMetrics();
 
-    auto start = high_resolution_clock::now();
-    int score = negaMax(board, std::numeric_limits<int>::min() + 1, std::numeric_limits<int>::max() - 1, maxDepth, &bestMove);
-    auto stop = high_resolution_clock::now();
+    moveStartTime = high_resolution_clock::now();
+    int depth = 0;
+    while (depth < maxDepth) {
+        depth++;
+        Move move;
+        move.from = 0;
+        move.to = 0;
 
-    metrics["Total time"] = (stop-start).count() * 1e-9;
+        negaMax(board, std::numeric_limits<int>::min() + 1, std::numeric_limits<int>::max() - 1, depth, &move);
+        auto stop = high_resolution_clock::now();
+
+        if (timeLimitExceded) break;
+
+        bestMove = move;
+        metrics["Last depth"] = depth;
+        metrics["Last depth time"] = (stop-moveStartTime).count() * 1e-9;
+    }
 
     return bestMove;
 }
