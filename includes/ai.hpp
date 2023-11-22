@@ -9,12 +9,13 @@
 
 class Ai {
     private:
-        int negaMax(Board board, int alpha, int beta, int depth, Move* move);
+        int negaMax(Board board, int alpha, int beta, int depth, Move* move, Move* lastBestMove);
         int quiesce(Board board, int alpha, int beta, int depth);
         int see(Board board, uint64_t bitboard, int pieceValue);
         int seeCapture(Board board, Move move);
 
-        std::vector<std::pair<Move, int>> orderMove(Board board, std::vector<Move> moves);
+        std::vector<std::pair<Move, int>> orderMove(Board board, std::vector<Move> moves, Move* lastBestMove);
+
         int getPieceValue(PieceType pieceType);
         TranspositionTable transpositionTable;
         void cleanMetrics();
@@ -97,7 +98,7 @@ class Ai {
 
     public:
         const int maxDepth = 7;
-        const int maxQuiesceDepth = 8;
+        const int maxQuiesceDepth = 12;
         const int timeLimit = 30;
         Move play(Board board);
         std::pair<int, bool> evaluate(Board board);

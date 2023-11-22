@@ -76,7 +76,7 @@ int Ai::quiesce(Board board, int alpha, int beta, int depth) {
     if (currentScore >= beta) return beta;
     if (alpha < currentScore) alpha = currentScore;
 
-    std::vector<std::pair<Move, int>> legalMoves = orderMove(board, board.legalMoves);
+    std::vector<std::pair<Move, int>> legalMoves = orderMove(board, board.legalMoves, nullptr);
 
     for (auto moveScore: legalMoves) {
         Move move = moveScore.first;
@@ -116,7 +116,7 @@ int Ai::quiesce(Board board, int alpha, int beta, int depth) {
     return alpha;
 }
 
-int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr) {
+int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, Move* lastBestMove) {
     if (depth == 0 || board.legalMoves.size() == 0) {
         auto start = high_resolution_clock::now();
         int score = quiesce(board, alpha, beta, maxQuiesceDepth);
@@ -151,9 +151,11 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr) 
     int score=std::numeric_limits<int>::min();
     Move bestMove;
 
-    std::vector<std::pair<Move, int>> legalMoves = orderMove(board, board.legalMoves);
+    std::vector<std::pair<Move, int>> legalMoves = orderMove(board, board.legalMoves, lastBestMove);
 
     for (auto moveScore: legalMoves) {
+        if (timeLimitExceded) break;
+
         Move move = moveScore.first;
         if (move.defend) continue;
         /* std::cout << "NegaMax " << bitboardToSquareName(move.from) << " to " <<  bitboardToSquareName(move.to) << ", depth " << depth << "\n"; */
@@ -163,7 +165,7 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr) 
         auto stop = high_resolution_clock::now();
         metrics["Push time"] += (stop - start).count() * 1e-9;
 
-        score = -negaMax(board, -beta, -alpha, depth-1, nullptr);
+        score = -negaMax(board, -beta, -alpha, depth-1, nullptr, nullptr);
 
         start = high_resolution_clock::now();
         board.pop();
@@ -193,20 +195,27 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr) 
     return alpha;
 }
 
-std::vector<std::pair<Move, int>> Ai::orderMove(Board board, std::vector<Move> moves) {
+std::vector<std::pair<Move, int>> Ai::orderMove(Board board, std::vector<Move> moves, Move* lastBestMove) {
     auto start = high_resolution_clock::now();
     std::vector<std::pair<Move, int>> movesList;
 
     for (Move move: moves) {
-        if (timeLimitExceded) break;
         int score = 0;
+        
+        if (lastBestMove != nullptr) {
+            if (*lastBestMove == move) {
+                score = std::numeric_limits<int>::max();
+                movesList.push_back(std::make_pair(move, score));
+                continue;
+            }
+        }
 
         Piece attackedPiece;
         Piece attackingPiece;
         board.pieceAtBitboard(move.from, &attackingPiece);
         if (board.pieceAtBitboard(move.to, &attackedPiece) && !move.defend)
             score += 10 * (getPieceValue(attackedPiece.pieceType) - getPieceValue(attackingPiece.pieceType));
-        
+
         if (move.promotion) score += getPieceValue(Queen);
 
         for (Move opponentMove: board.opponentLegalMoves)
@@ -218,7 +227,6 @@ std::vector<std::pair<Move, int>> Ai::orderMove(Board board, std::vector<Move> m
                     break;
                 }
             }
-
         movesList.push_back(std::make_pair(move, score));
     }
 
@@ -248,7 +256,7 @@ Move Ai::play(Board board) {
         move.from = 0;
         move.to = 0;
 
-        negaMax(board, std::numeric_limits<int>::min() + 1, std::numeric_limits<int>::max() - 1, depth, &move);
+        negaMax(board, std::numeric_limits<int>::min() + 1, std::numeric_limits<int>::max() - 1, depth, &move, (depth == 1) ? nullptr : &bestMove);
         auto stop = high_resolution_clock::now();
 
         if (timeLimitExceded) break;
@@ -257,6 +265,9 @@ Move Ai::play(Board board) {
         metrics["Last depth"] = depth;
         metrics["Last depth time"] = (stop-moveStartTime).count() * 1e-9;
     }
+
+    auto stop = high_resolution_clock::now();
+    metrics["Total time"] = (stop-moveStartTime).count() * 1e-9;
 
     return bestMove;
 }
