@@ -154,7 +154,7 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, 
     std::vector<std::pair<Move, int>> legalMoves = orderMove(board, board.legalMoves, lastBestMove);
 
     for (auto moveScore: legalMoves) {
-        if (timeLimitExceded) break;
+        if (stopSearching) break;
 
         Move move = moveScore.first;
         if (move.defend) continue;
@@ -240,7 +240,8 @@ std::vector<std::pair<Move, int>> Ai::orderMove(Board board, std::vector<Move> m
 }
 
 Move Ai::play(Board board) {
-    timeLimitExceded = false;
+    lock = true;
+    stopSearching = false;
 
     Move bestMove;
     bestMove.from = 0;
@@ -259,16 +260,18 @@ Move Ai::play(Board board) {
         negaMax(board, std::numeric_limits<int>::min() + 1, std::numeric_limits<int>::max() - 1, depth, &move, (depth == 1) ? nullptr : &bestMove);
         auto stop = high_resolution_clock::now();
 
-        if (timeLimitExceded) break;
+        if (stopSearching) break;
 
+        float lastDepthTime = (stop-moveStartTime).count() * 1e-9;
         bestMove = move;
         metrics["Last depth"] = depth;
-        metrics["Last depth time"] = (stop-moveStartTime).count() * 1e-9;
+        metrics["Last depth time"] = lastDepthTime;
     }
 
     auto stop = high_resolution_clock::now();
     metrics["Total time"] = (stop-moveStartTime).count() * 1e-9;
 
+    lock = false;
     return bestMove;
 }
 

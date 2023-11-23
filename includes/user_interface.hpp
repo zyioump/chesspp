@@ -4,6 +4,7 @@
 #include <vector>
 #include <math.h>
 #include <string>
+#include <thread>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -32,7 +33,6 @@ class UserInterface {
         int highlighted_square = -1;
         std::vector<uint> highlighted_moves;
         void clearHighlight();
-        void displayDebug(Board board, Ai ai);
         SDL_Rect drawCastling(Board board, int x, int y);
         SDL_Rect drawMetrics(std::map<std::string, float> metrics, int x);
 
@@ -45,6 +45,8 @@ class UserInterface {
         SDL_Window* window;
         SDL_Renderer* renderer;
         SDL_Texture* piece_set_texture;
+
+        void displayDebug(Board board, Ai ai);
 
     public:
         UserInterface();

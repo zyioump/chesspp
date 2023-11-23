@@ -15,8 +15,6 @@
 class Board {
     private:
 
-        std::vector<BoardSnapshot> moveStack;
-
         std::vector<Direction> queenDirections = {No, So, Ea, We, NoEa, NoWe, SoEa, SoWe};
         std::vector<Direction> rookDirections = {No, So, Ea, We};
         std::vector<Direction> bishopDirections = {NoEa, NoWe, SoEa, SoWe};
@@ -44,6 +42,8 @@ class Board {
         int enPassantCol = -1;
         bool castling[2][2] = {0};
         Color turn = White;
+
+        std::vector<BoardSnapshot> moveStack;
 
         uint64_t zobrist;
 

@@ -70,8 +70,6 @@ void UserInterface::displayBoard(Board board, Ai ai) {
     }
 
     displayDebug(board, ai);
-    
-    SDL_RenderPresent(renderer);
 }
 
 SDL_Rect UserInterface::writeText(std::string text, int x, int y, SDL_Color color) {
@@ -121,15 +119,19 @@ SDL_Rect UserInterface::drawMetrics(std::map<std::string, float> metrics, int y)
     metricRect.w = debugSize - margin;
 
     int i=0;
+    SDL_Rect textRect;
     for (auto metric: metrics) {
         std::ostringstream metricStream;
         metricStream << metric.first << " : ";
         metricStream << std::fixed << std::setprecision((floor(metric.second) == metric.second) ? 0 : 2);
         metricStream << metric.second;
-        SDL_Rect textRect = writeText(metricStream.str(), (i%2) ? (chessSize + debugSize/2 + margin) : chessSize + margin, y, textColor);
+        textRect = writeText(metricStream.str(), (i%2) ? (chessSize + debugSize/2 + margin) : chessSize + margin, y, textColor);
         if (i%2) y += textRect.h + margin;
         i++;
     }
+    if (i%2 == 1) y += textRect.h + margin;
+
+    y -= margin;
 
     metricRect.h = y - metricRect.y;
     return metricRect;
@@ -168,6 +170,23 @@ void UserInterface::displayDebug(Board board, Ai ai) {
     SDL_Rect zobristRect = writeText(zobristText, maxDepthRect.x, maxDepthRect.y + maxDepthRect.h + margin, textColor);
 
     SDL_Rect metricsRect = drawMetrics(ai.metrics, zobristRect.y + zobristRect.h + margin);
+
+    SDL_Rect searchingTimeRect = metricsRect;
+    if (ai.lock) {
+        auto stop = std::chrono::high_resolution_clock::now();
+        float searchTime = (stop - ai.moveStartTime).count() * 1e-9;
+        std::ostringstream searchTimeStream;
+        searchTimeStream << "Searching time : " << std::fixed << std::setprecision((floor(searchTime) == searchTime) ? 0 : 2) << searchTime;
+        searchingTimeRect = writeText(searchTimeStream.str(), metricsRect.x, metricsRect.y + metricsRect.h + margin, textColor);
+    }
+
+    if (board.moveStack.size() > 0) {
+        BoardSnapshot lastSnapshot = board.moveStack.back();
+        std::string moveText = "Last move : " + bitboardToSquareName(lastSnapshot.move.from) + " "+ bitboardToSquareName(lastSnapshot.move.to);
+        SDL_Rect moveRect = writeText(moveText, searchingTimeRect.x, searchingTimeRect.y + searchingTimeRect.h + margin, textColor);
+    }
+    
+    SDL_RenderPresent(renderer);
 }
 
 UIFlag UserInterface::chessClick(SDL_Event e, Board board, Move* move) {
@@ -198,20 +217,24 @@ UIFlag UserInterface::chessClick(SDL_Event e, Board board, Move* move) {
 }
 
 UIFlag UserInterface::play(Board board, Ai ai, Move* move) {
-    displayBoard(board, ai);
-    while (true) {
-        SDL_Event e;
-        if (SDL_WaitEvent(&e)) {
-            if (e.type == SDL_QUIT) {
-                return QUIT;
-            } else if (e.type == SDL_MOUSEBUTTONDOWN) {
-                if (e.button.button == SDL_BUTTON_LEFT){
-                    if (e.button.x < chessSize) return chessClick(e, board, move);
-                } else if (e.button.button == SDL_BUTTON_RIGHT) {
-                    clearHighlight();
-                    return POP;
+    SDL_Event e;
+    if (SDL_WaitEventTimeout(&e, 250)) {
+        if (e.type == SDL_QUIT) {
+            return QUIT;
+        } else if (e.type == SDL_MOUSEBUTTONDOWN) {
+            if (e.button.button == SDL_BUTTON_LEFT){
+                if (e.button.x < chessSize) {
+                    UIFlag flag = chessClick(e, board, move);
+                    displayBoard(board, ai);
+                    return flag;
                 }
-                else clearHighlight();
+            } else if (e.button.button == SDL_BUTTON_RIGHT) {
+                clearHighlight();
+                displayBoard(board, ai);
+                return POP;
+            }
+            else {
+                clearHighlight();
                 displayBoard(board, ai);
             }
         }

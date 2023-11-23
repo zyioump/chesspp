@@ -29,7 +29,7 @@ std::pair<int, bool> Ai::evaluate(Board board) {
     }
 
     auto currentTime = std::chrono::high_resolution_clock::now();
-    if ((currentTime - moveStartTime).count() * 1e-9 >= timeLimit) timeLimitExceded = true;
+    if ((currentTime - moveStartTime).count() * 1e-9 >= timeLimit) stopSearching = true;
 
     return std::make_pair(isBlack * score, endGame);
 }

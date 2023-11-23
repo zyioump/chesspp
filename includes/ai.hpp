@@ -22,8 +22,6 @@ class Ai {
         int getPiecesBonus(PieceType pieceType, Color color, std::vector<uint64_t> piecesBitboards, bool endGame);
         int transposeSquareForBonus(int square, Color color);
 
-        bool timeLimitExceded = false;
-        std::chrono::high_resolution_clock::time_point moveStartTime;
 
         int pawnSquareBonus[64] = {
             0,  0,  0,  0,  0,  0,  0,  0,
@@ -100,6 +98,9 @@ class Ai {
         const int maxDepth = 7;
         const int maxQuiesceDepth = 12;
         const int timeLimit = 30;
+        std::chrono::high_resolution_clock::time_point moveStartTime;
+        bool stopSearching = false;
+        bool lock = false;
         Move play(Board board);
         std::pair<int, bool> evaluate(Board board);
         void freeMemory();

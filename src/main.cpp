@@ -2,6 +2,9 @@
 #include "board.hpp"
 #include "ai.hpp"
 
+#include <future>
+#include <chrono>
+
 int main(int argc, char *argv[]) {
     Board board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     /* Board board("8/8/8/8/8/8/2K3q1/8 w - - 0 1"); */
@@ -10,8 +13,7 @@ int main(int argc, char *argv[]) {
     UserInterface ui;
     Ai ai;
 
-    board.pieces(Rook, White);
-
+    ui.displayBoard(board, ai);
     while (true) {
         Move move;
         UIFlag flag = ui.play(board, ai, &move);
@@ -22,8 +24,30 @@ int main(int argc, char *argv[]) {
             continue;
         }
         else if (flag == NONE) continue;
+        ui.displayBoard(board, ai);
 
-        board.push(ai.play(board));
+        std::future<Move> futureMove = std::async(&Ai::play, &ai, board);
+        ai.lock = true;
+
+
+        auto start = std::chrono::high_resolution_clock::now();
+        while (ai.lock) {
+            flag = ui.play(board, ai, &move);
+            if (flag == QUIT) {
+                ai.stopSearching = true;
+                break;
+            };
+
+            auto currentTime = std::chrono::high_resolution_clock::now();
+            if ((currentTime - start).count()*1e-9 >= 0.25) {
+                start = currentTime;
+                ui.displayBoard(board, ai);
+            }
+        }
+        if (ai.lock) break;
+
+        board.push(futureMove.get());
+        ui.displayBoard(board, ai);
     }
 
     ui.freeMemory();
