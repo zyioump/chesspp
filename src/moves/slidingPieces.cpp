@@ -17,7 +17,12 @@ std::vector<Move> Board::generateSlidingPiecesMoves(uint64_t bitboard, std::vect
             if (direction == No || direction == Ea || direction == NoWe || direction == NoEa) ls1bXraySquare = forwardBitscan(xrayAttackedPiece);
             else ls1bXraySquare = reverseBitscan(xrayAttackedPiece);
 
-            if (color != turn && piecesBitboards[turn][King] & ray) {
+            if (ls1bXraySquare == reverseBitscan(piecesBitboards[turn][King])) {
+                PinnedPiece pinnedPiece;
+                pinnedPiece.square = ls1bXraySquare;
+                pinnedPiece.direction = direction;
+                pinnedPieces.push_back(pinnedPiece);
+            } else if (color != turn && piecesBitboards[turn][King] & ray) {
                 int ls2bXraySquare;
                 if (direction == No || direction == Ea || direction == NoWe || direction == NoEa) ls2bXraySquare = forwardBitscan(xrayAttackedPiece ^ (uint64_t) 1 << ls1bXraySquare);
                 else ls2bXraySquare = reverseBitscan(xrayAttackedPiece ^ (uint64_t) 1 << ls1bXraySquare);

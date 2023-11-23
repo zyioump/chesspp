@@ -202,15 +202,21 @@ std::vector<Move> Board::generateColorMoves(uint64_t colorBitboard, uint64_t opp
      std::vector<PinnedPiece>::iterator pinnedPieceItr = std::find(pinnedPieces.begin(), pinnedPieces.end(), searchPinnedPiece);
      if (pinnedPieceItr == pinnedPieces.end()) return moves;
 
-     std::vector<Move> legalMoves;
-     if (pieceType == Knight) return legalMoves;
+     std::vector<Move> pieceLegalMoves;
+     if (pieceType == Knight) return pieceLegalMoves;
 
      Direction pinnedDirection = pinnedPieceItr->direction;
      Direction complementaryPinnedDirection = (pinnedDirection >= 4) ? Direction (pinnedDirection - 4) : Direction (pinnedDirection + 4);
-     for (Move move: moves)
-         if (move.direction == pinnedDirection || move.direction == complementaryPinnedDirection) legalMoves.push_back(move);
 
-     return legalMoves;
+     if (pieceType == King) {
+         for (Move move: moves)
+             if (move.direction != pinnedDirection && move.direction != complementaryPinnedDirection) pieceLegalMoves.push_back(move);
+     } else {
+         for (Move move: moves)
+             if (move.direction == pinnedDirection || move.direction == complementaryPinnedDirection) pieceLegalMoves.push_back(move);
+     }
+
+     return pieceLegalMoves;
 }
 
 void Board::generateMoves(){
