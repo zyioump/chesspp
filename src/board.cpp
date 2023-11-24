@@ -177,7 +177,7 @@ std::vector<Move> Board::generateColorMoves(uint64_t colorBitboard, uint64_t opp
                     case Bishop: piece_moves = generateSlidingPiecesMoves(pieceBitboard, bishopDirections, globalBitboard, colorBitboard, opponentColorBitboard, color); break;
                 }
                 if (kingAttackers == 1 && pieceType != King) piece_moves = removeNonKingProtectionMove(piece_moves, kingProtectionSquare);
-                std::vector<Move> legalMove = removeNonLegalMove(piece_moves, pieceBitboard, (PieceType) pieceType);
+                std::vector<Move> legalMove = removeNonLegalMove(piece_moves, pieceBitboard, (PieceType) pieceType, kingAttackerBitboard);
                 moves.insert(moves.begin(), legalMove.begin(), legalMove.end());
             }
         }
@@ -195,7 +195,7 @@ std::vector<Move> Board::generateColorMoves(uint64_t colorBitboard, uint64_t opp
      return legalMoves;
  }
 
- std::vector<Move> Board::removeNonLegalMove(std::vector<Move> moves, uint64_t pieceBitboard, PieceType pieceType) {
+ std::vector<Move> Board::removeNonLegalMove(std::vector<Move> moves, uint64_t pieceBitboard, PieceType pieceType, uint64_t kingAttackerBitboard) {
      PinnedPiece searchPinnedPiece = PinnedPiece();
      searchPinnedPiece.square = reverseBitscan(pieceBitboard);
 
@@ -209,8 +209,10 @@ std::vector<Move> Board::generateColorMoves(uint64_t colorBitboard, uint64_t opp
      Direction complementaryPinnedDirection = (pinnedDirection >= 4) ? Direction (pinnedDirection - 4) : Direction (pinnedDirection + 4);
 
      if (pieceType == King) {
-         for (Move move: moves)
-             if (move.direction != pinnedDirection && move.direction != complementaryPinnedDirection) pieceLegalMoves.push_back(move);
+         for (Move move: moves) {
+             if (move.to == kingAttackerBitboard) pieceLegalMoves.push_back(move);
+             else if (move.direction != pinnedDirection && move.direction != complementaryPinnedDirection) pieceLegalMoves.push_back(move);
+         }
      } else {
          for (Move move: moves)
              if (move.direction == pinnedDirection || move.direction == complementaryPinnedDirection) pieceLegalMoves.push_back(move);

@@ -25,7 +25,7 @@ class Board {
         std::vector<Move> generateColorMoves(uint64_t colorBitboard, uint64_t opponentColorBitboard, uint64_t globalBitboard, Color color, std::vector<Move>* opponentLegalAttackPtr);
 
         std::vector<Move> removeNonKingProtectionMove(std::vector<Move> moves, uint64_t piecesBitboard);
-        std::vector<Move> removeNonLegalMove(std::vector<Move> moves, uint64_t kingProtectionSquare, PieceType pieceType);
+        std::vector<Move> removeNonLegalMove(std::vector<Move> moves, uint64_t kingProtectionSquare, PieceType pieceType, uint64_t kingAttackerBitboard);
 
         std::vector<Move> generatePawnMoves(uint64_t bitboard, uint64_t globalBitboard, uint64_t colorBitboard, uint64_t opponentColorBitboard, Color color);
         std::vector<Move> generateKnightMoves(uint64_t bitboard, uint64_t globalBitboard, uint64_t colorBitboard, uint64_t opponentColorBitboard, Color color);
