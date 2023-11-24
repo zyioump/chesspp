@@ -154,7 +154,7 @@ void UserInterface::displayDebug(Board board, Ai ai) {
     SDL_RenderFillRect(renderer, &turnIndicatorRect);
 
     auto evaluation = ai.evaluate(board);
-    std::string evaluationText = "Eval : " + std::to_string(evaluation.first) + ((evaluation.second) ? " E" : "");
+    std::string evaluationText = "Eval : " + std::to_string(evaluation.first) + "E" + std::to_string(evaluation.second);
     SDL_Rect evaluationRect = writeText(evaluationText, turnIndicatorRect.x + turnIndicatorRect.w + 2*margin, turnIndicatorRect.y, textColor);
 
     std::string maxDepthText = "Depth : " + std::to_string(ai.maxDepth);

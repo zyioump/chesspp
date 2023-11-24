@@ -7,6 +7,12 @@
 #include "board.hpp"
 #include "transposition_table.hpp"
 
+struct PieceBonus{
+    int earlyBonus = 0;
+    int endBonus = 0;
+    int endGame = 0;
+};
+
 class Ai {
     private:
         int negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, std::list<Move>* bestVariation, std::list<Move>* lastVariation);
@@ -19,80 +25,23 @@ class Ai {
         int getPieceValue(PieceType pieceType);
         TranspositionTable transpositionTable;
         void cleanMetrics();
-        int getPiecesBonus(PieceType pieceType, Color color, std::vector<uint64_t> piecesBitboards, bool endGame);
+        PieceBonus getPieceBonus(PieceType pieceType, Color color, std::vector<uint64_t> pieceBitboards);
         int transposeSquareForBonus(int square, Color color);
 
 
-        int pawnSquareBonus[64] = {
-            0,  0,  0,  0,  0,  0,  0,  0,
-            50, 50, 50, 50, 50, 50, 50, 50,
-            10, 10, 20, 30, 30, 20, 10, 10,
-            5,  5, 10, 25, 25, 10,  5,  5,
-            0,  0,  0, 20, 20,  0,  0,  0,
-            5, -5,-10,  0,  0,-10, -5,  5,
-            5, 10, 10,-20,-20, 10, 10,  5,
-            0,  0,  0,  0,  0,  0,  0,  0
-        };
-        int knightSquareBonus[64] = {
-            -50,-40,-30,-30,-30,-30,-40,-50,
-            -40,-20,  0,  0,  0,  0,-20,-40,
-            -30,  0, 10, 15, 15, 10,  0,-30,
-            -30,  5, 15, 20, 20, 15,  5,-30,
-            -30,  0, 15, 20, 20, 15,  0,-30,
-            -30,  5, 10, 15, 15, 10,  5,-30,
-            -40,-20,  0,  5,  5,  0,-20,-40,
-            -50,-40,-30,-30,-30,-30,-40,-50,
-        };
-        int bishopSquareBonus[64] = {
-            -20,-10,-10,-10,-10,-10,-10,-20,
-            -10,  0,  0,  0,  0,  0,  0,-10,
-            -10,  0,  5, 10, 10,  5,  0,-10,
-            -10,  5,  5, 10, 10,  5,  5,-10,
-            -10,  0, 10, 10, 10, 10,  0,-10,
-            -10, 10, 10, 10, 10, 10, 10,-10,
-            -10,  5,  0,  0,  0,  0,  5,-10,
-            -20,-10,-10,-10,-10,-10,-10,-20,
-        };
-        int rookSquareBonus[64] = {
-            0,  0,  0,  0,  0,  0,  0,  0,
-            5, 10, 10, 10, 10, 10, 10,  5,
-            -5,  0,  0,  0,  0,  0,  0, -5,
-            -5,  0,  0,  0,  0,  0,  0, -5,
-            -5,  0,  0,  0,  0,  0,  0, -5,
-            -5,  0,  0,  0,  0,  0,  0, -5,
-            -5,  0,  0,  0,  0,  0,  0, -5,
-            0,  0,  0,  5,  5,  0,  0,  0
-        };
-        int queenSquareBonus[64] = {
-            -20,-10,-10, -5, -5,-10,-10,-20,
-            -10,  0,  0,  0,  0,  0,  0,-10,
-            -10,  0,  5,  5,  5,  5,  0,-10,
-            -5,  0,  5,  5,  5,  5,  0, -5,
-            0,  0,  5,  5,  5,  5,  0, -5,
-            -10,  5,  5,  5,  5,  5,  0,-10,
-            -10,  0,  5,  0,  0,  0,  0,-10,
-            -20,-10,-10, -5, -5,-10,-10,-20
-        };
-        int kingSquareBonus[64] = {
-            -30,-40,-40,-50,-50,-40,-40,-30,
-            -30,-40,-40,-50,-50,-40,-40,-30,
-            -30,-40,-40,-50,-50,-40,-40,-30,
-            -30,-40,-40,-50,-50,-40,-40,-30,
-            -20,-30,-30,-40,-40,-30,-30,-20,
-            -10,-20,-20,-20,-20,-20,-20,-10,
-            20, 20,  0,  0,  0,  0, 20, 20,
-            20, 30, 10,  0,  0, 10, 30, 20
-        };
-        int kingEndGameBonus[64] = {
-            -50,-40,-30,-20,-20,-30,-40,-50,
-            -30,-20,-10,  0,  0,-10,-20,-30,
-            -30,-10, 20, 30, 30, 20,-10,-30,
-            -30,-10, 30, 40, 40, 30,-10,-30,
-            -30,-10, 30, 40, 40, 30,-10,-30,
-            -30,-10, 20, 30, 30, 20,-10,-30,
-            -30,-30,  0,  0,  0,  0,-30,-30,
-            -50,-30,-30,-30,-30,-30,-30,-50
-        };
+        const static int pawnSquareEarlyBonus[64];
+        const static int knightSquareEarlyBonus[64];
+        const static int bishopSquareEarlyBonus[64];
+        const static int rookSquareEarlyBonus[64];
+        const static int queenSquareEarlyBonus[64];
+        const static int kingSquareEarlyBonus[64];
+
+        const static int pawnSquareEndBonus[64];
+        const static int knightSquareEndBonus[64];
+        const static int bishopSquareEndBonus[64];
+        const static int rookSquareEndBonus[64];
+        const static int queenSquareEndBonus[64];
+        const static int kingSquareEndBonus[64];
 
     public:
         const int maxDepth = 7;
@@ -102,7 +51,7 @@ class Ai {
         bool stopSearching = false;
         bool lock = false;
         Move play(Board board);
-        std::pair<int, bool> evaluate(Board board);
+        std::pair<int, int> evaluate(Board board);
         void freeMemory();
         std::map<std::string, float> metrics;
 };

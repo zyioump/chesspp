@@ -67,7 +67,7 @@ int Ai::quiesce(Board board, int alpha, int beta, int depth) {
     auto start = high_resolution_clock::now();
     auto evaluation = evaluate(board);
     int currentScore = evaluation.first;
-    bool endGame = evaluation.second;
+    int endGame = evaluation.second;
     auto stop = high_resolution_clock::now();
     metrics["Evaluation time"] += (stop - start).count() * 1e-9;
 
@@ -91,7 +91,7 @@ int Ai::quiesce(Board board, int alpha, int beta, int depth) {
         if (!board.pieceAtBitboard(move.to, &attackedPiece)) continue;
         /* std::cout << "Quiesce " << bitboardToSquareName(move.from) << " to " <<  bitboardToSquareName(move.to) << ", depth " << depth << "\n"; */
 
-        if (!endGame) {
+        if (endGame > 6) {
             start = high_resolution_clock::now();
             seeScore = seeCapture(board, move);
             stop = high_resolution_clock::now();

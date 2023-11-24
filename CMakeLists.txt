@@ -25,6 +25,7 @@ add_executable(${PROJECT_NAME}
     src/ai/quiesce.cpp
     src/ai/search.cpp
     src/ai/evaluation.cpp
+    src/ai/piece_table.cpp
     src/zobrist.cpp
     src/transposition_table.cpp
 )  

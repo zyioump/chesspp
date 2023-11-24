@@ -1,37 +1,36 @@
 #include "ai.hpp"
 
-std::pair<int, bool> Ai::evaluate(Board board) {
-    int score = 0;
-    bool endGame = false;
+std::pair<int, int> Ai::evaluate(Board board) {
     int isBlack = (board.turn == White) ? 1 : -1;
 
-    int whiteQueenNum = board.pieces(Queen, White).size();
-    int blackQueenNum = board.pieces(Queen, Black).size();
-    int whiteRookNum = board.pieces(Rook, White).size();
-    int blackRookNum = board.pieces(Rook, Black).size();
-
-    if (whiteRookNum == 0 && blackQueenNum == 0 && whiteRookNum <= 1 && blackRookNum <= 1) endGame = true;
-    else if (whiteQueenNum + blackQueenNum == 1) {
-        Color noQueenSideColor = (whiteQueenNum == 1) ? Black : White;
-        int noQueenSideRookNum = (noQueenSideColor == White) ? whiteRookNum : blackRookNum;
-        if (noQueenSideRookNum == 0 && (board.pieces(Bishop, noQueenSideColor).size() + board.pieces(Bishop, noQueenSideColor).size()) <= 1)
-            endGame = true;
-    }
+    int earlyScore[2]  = {0};
+    int endScore[2] = {0};
+    int endGame=0;
+    int score = 0;
 
     for (int pieceType=0; pieceType<6; pieceType++) {
-        int pieceValue = getPieceValue((PieceType) pieceType);
+        std::vector<uint64_t> pieces[2];
+        for (int color=0; color<2; color++) {
+            pieces[color] = board.pieces((PieceType) pieceType, (Color) color);
+            PieceBonus pieceBonus = getPieceBonus((PieceType) pieceType, (Color) color, pieces[color]);
 
-        auto whitePieces = board.pieces((PieceType) pieceType, White);
-        auto blackPieces = board.pieces((PieceType) pieceType, Black);
-
-        score += pieceValue * (whitePieces.size() - blackPieces.size());
-        score += getPiecesBonus((PieceType) pieceType, White, whitePieces, endGame) - getPiecesBonus((PieceType) pieceType, Black, blackPieces, endGame);
+            earlyScore[color] += pieceBonus.earlyBonus;
+            endScore[color] += pieceBonus.endBonus;
+            endGame += pieceBonus.endGame;
+        }
+        score += getPieceValue((PieceType) pieceType) * (pieces[White].size() - pieces[Black].size());
     }
+
+    int early = earlyScore[White] - earlyScore[Black];
+    int end = endScore[White] - endScore[Black];
+    if (endGame > 24) endGame = 24;
+
+    score += (endGame * early + (24 - endGame) * end) / 24;
 
     auto currentTime = std::chrono::high_resolution_clock::now();
     if ((currentTime - moveStartTime).count() * 1e-9 >= timeLimit) stopSearching = true;
 
-    return std::make_pair(isBlack * score, endGame);
+    return std::make_pair(isBlack * score, (float) endGame);
 }
 
 int Ai::transposeSquareForBonus(int square, Color color) {
@@ -44,24 +43,57 @@ int Ai::transposeSquareForBonus(int square, Color color) {
     return index;
 }
 
-int Ai::getPiecesBonus(PieceType pieceType, Color color, std::vector<uint64_t> bitboards, bool endGame) {
-    int bonus = 0;
-    int* bonusArray;
+PieceBonus Ai::getPieceBonus(PieceType pieceType, Color color, std::vector<uint64_t> pieceBitboards) {
+    PieceBonus pieceBonus;
+    pieceBonus.earlyBonus = 0;
+    pieceBonus.endBonus = 0;
+    pieceBonus.endGame = 0;
+
+
+    const int* ealyBonusArray;
+    const int* endBonusArray;
 
     switch (pieceType) {
-        case King: bonusArray = endGame ? kingEndGameBonus : kingSquareBonus; break;
-        case Queen: bonusArray = queenSquareBonus; break;
-        case Rook: bonusArray = rookSquareBonus; break;
-        case Bishop: bonusArray = bishopSquareBonus; break;
-        case Knight: bonusArray = knightSquareBonus; break;
-        case Pawn: bonusArray = pawnSquareBonus; break;
+        case King: 
+            ealyBonusArray = kingSquareEarlyBonus; 
+            endBonusArray = kingSquareEndBonus; 
+            break;
+        case Queen:
+            ealyBonusArray = queenSquareEarlyBonus; 
+            endBonusArray = queenSquareEndBonus; 
+            pieceBonus.endGame = 4;
+            break;
+        case Rook:
+            ealyBonusArray = rookSquareEarlyBonus; 
+            endBonusArray = rookSquareEndBonus; 
+            pieceBonus.endGame = 2;
+            break;
+        case Bishop:
+            ealyBonusArray = bishopSquareEarlyBonus; 
+            endBonusArray = bishopSquareEndBonus; 
+            pieceBonus.endGame = 1;
+            break;
+        case Knight:
+            ealyBonusArray = knightSquareEarlyBonus; 
+            endBonusArray = knightSquareEndBonus; 
+            pieceBonus.endGame = 1;
+            break;
+        case Pawn:
+            ealyBonusArray = pawnSquareEarlyBonus; 
+            endBonusArray = pawnSquareEndBonus; 
+            break;
     }
-    for (uint64_t bitboard: bitboards) {
+
+    int pieceNum = 0;
+    for (uint64_t bitboard: pieceBitboards) {
         int square = reverseBitscan(bitboard);
         int bonusIndex = transposeSquareForBonus(square, color);
-        bonus += bonusArray[bonusIndex];
+        pieceBonus.earlyBonus += ealyBonusArray[bonusIndex];
+        pieceBonus.endBonus += endBonusArray[bonusIndex];
+        pieceNum++;
     }
-    return bonus;
+    pieceBonus.endGame *= pieceNum;
+    return pieceBonus;
 }
 
 int Ai::getPieceValue(PieceType pieceType) {
