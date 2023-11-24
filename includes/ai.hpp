@@ -14,7 +14,7 @@ class Ai {
         int see(Board board, uint64_t bitboard, int pieceValue);
         int seeCapture(Board board, Move move);
 
-        std::vector<std::pair<Move, int>> orderMove(Board board, std::vector<Move> moves, Move* lastBestMove);
+        std::vector<std::pair<Move, int>> orderMove(Board board, std::vector<Move> moves, Move* lastBestMove, Move* hashMove);
 
         int getPieceValue(PieceType pieceType);
         TranspositionTable transpositionTable;

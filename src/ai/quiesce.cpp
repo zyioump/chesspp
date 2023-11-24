@@ -78,7 +78,7 @@ int Ai::quiesce(Board board, int alpha, int beta, int depth) {
     if (currentScore >= beta) return beta;
     if (alpha < currentScore) alpha = currentScore;
 
-    std::vector<std::pair<Move, int>> legalMoves = orderMove(board, board.legalMoves, nullptr);
+    std::vector<std::pair<Move, int>> legalMoves = orderMove(board, board.legalMoves, nullptr, nullptr);
 
     Move move;
     Piece attackedPiece;

@@ -14,6 +14,7 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, 
     int alphaOrig = alpha;
 
     TTEntry entry;
+    Move* hashMove = nullptr;
     if (transpositionTable.getEntry(board.zobrist, &entry)) {
         if (entry.depth >= depth) {
             metrics["TT use"]++;
@@ -25,6 +26,7 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, 
             } else if (entry.flag == BETA) {
                 if (entry.score < beta) beta = entry.score;
             }
+            hashMove = &entry.bestMove;
 
             if (alpha >= beta) {
                 if (bestMovePtr != nullptr) *bestMovePtr = entry.bestMove;
@@ -44,7 +46,7 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, 
         lastVariation->pop_front();
     }
 
-    std::vector<std::pair<Move, int>> legalMoves = orderMove(board, board.legalMoves, lastBestMove);
+    std::vector<std::pair<Move, int>> legalMoves = orderMove(board, board.legalMoves, lastBestMove, hashMove);
 
     Move move;
     std::list<Move>* moveLastVariation = nullptr;
@@ -98,7 +100,7 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, 
     return alpha;
 }
 
-std::vector<std::pair<Move, int>> Ai::orderMove(Board board, std::vector<Move> moves, Move* lastBestMove) {
+std::vector<std::pair<Move, int>> Ai::orderMove(Board board, std::vector<Move> moves, Move* lastBestMove, Move* hashMove) {
     auto start = high_resolution_clock::now();
     std::vector<std::pair<Move, int>> movesList;
 
@@ -113,7 +115,14 @@ std::vector<std::pair<Move, int>> Ai::orderMove(Board board, std::vector<Move> m
                 score = std::numeric_limits<int>::max()-1;
                 movesList.push_back(std::make_pair(move, score));
                 continue;
-            }
+            } 
+        }
+        if (hashMove != nullptr) {
+            if (*hashMove == move) {
+                score = std::numeric_limits<int>::max()-2;
+                movesList.push_back(std::make_pair(move, score));
+                continue;
+            } 
         }
 
         board.pieceAtBitboard(move.from, &attackingPiece);
