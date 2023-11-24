@@ -6,14 +6,15 @@ int Ai::see(Board board, uint64_t bitboard, int pieceValue) {
     Move minAttackerMove;
     int minAttackerValue = std::numeric_limits<int>::max();
 
+    Piece attacker;
+    int value;
     for (Move move: board.legalMoves){
         if (!move.attack || move.defend) continue;
         if (move.to != bitboard) continue;
 
-        Piece attacker;
         board.pieceAtBitboard(move.from, &attacker);
         
-        int value = getPieceValue(attacker.pieceType);
+        value = getPieceValue(attacker.pieceType);
         if (value < minAttackerValue) {
             minAttackerValue = value;
             minAttackerMove = move;
@@ -79,17 +80,20 @@ int Ai::quiesce(Board board, int alpha, int beta, int depth) {
 
     std::vector<std::pair<Move, int>> legalMoves = orderMove(board, board.legalMoves, nullptr);
 
+    Move move;
+    Piece attackedPiece;
+    int seeScore;
+    int score;
     for (auto moveScore: legalMoves) {
-        Move move = moveScore.first;
+        move = moveScore.first;
         if (move.defend || !move.attack) continue;
 
-        Piece attackedPiece;
         if (!board.pieceAtBitboard(move.to, &attackedPiece)) continue;
         /* std::cout << "Quiesce " << bitboardToSquareName(move.from) << " to " <<  bitboardToSquareName(move.to) << ", depth " << depth << "\n"; */
 
         if (!endGame) {
             start = high_resolution_clock::now();
-            int seeScore = seeCapture(board, move);
+            seeScore = seeCapture(board, move);
             stop = high_resolution_clock::now();
             metrics["See time"] += (stop - start).count() * 1e-9;
 
@@ -104,7 +108,7 @@ int Ai::quiesce(Board board, int alpha, int beta, int depth) {
         auto stop = high_resolution_clock::now();
         metrics["Push time"] += (stop - start).count() * 1e-9;
 
-        int score = -quiesce(board, -beta, -alpha, depth-1);
+        score = -quiesce(board, -beta, -alpha, depth-1);
 
         start = high_resolution_clock::now();
         board.pop();

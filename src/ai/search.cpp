@@ -46,10 +46,13 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, 
 
     std::vector<std::pair<Move, int>> legalMoves = orderMove(board, board.legalMoves, lastBestMove);
 
+    Move move;
+    std::list<Move>* moveLastVariation = nullptr;
+    std::list<Move>  moveVariation;
     for (auto moveScore: legalMoves) {
         if (stopSearching) break;
 
-        Move move = moveScore.first;
+        move = moveScore.first;
         if (move.defend) continue;
         /* std::cout << "NegaMax " << bitboardToSquareName(move.from) << " to " <<  bitboardToSquareName(move.to) << ", depth " << depth << "\n"; */
 
@@ -58,8 +61,8 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, 
         auto stop = high_resolution_clock::now();
         metrics["Push time"] += (stop - start).count() * 1e-9;
 
-        std::list<Move> moveVariation = {};
-        std::list<Move>* moveLastVariation = nullptr;
+        moveVariation.clear();
+        moveLastVariation = nullptr;
         if (lastBestMove != nullptr) if (move == *lastBestMove) moveLastVariation = lastVariation;
         score = -negaMax(board, -beta, -alpha, depth-1, nullptr, &moveVariation, moveLastVariation);
 
@@ -99,8 +102,11 @@ std::vector<std::pair<Move, int>> Ai::orderMove(Board board, std::vector<Move> m
     auto start = high_resolution_clock::now();
     std::vector<std::pair<Move, int>> movesList;
 
+    Piece attackedPiece;
+    Piece attackingPiece;
+    int score;
     for (Move move: moves) {
-        int score = 0;
+        score = 0;
         
         if (lastBestMove != nullptr) {
             if (*lastBestMove == move) {
@@ -110,8 +116,6 @@ std::vector<std::pair<Move, int>> Ai::orderMove(Board board, std::vector<Move> m
             }
         }
 
-        Piece attackedPiece;
-        Piece attackingPiece;
         board.pieceAtBitboard(move.from, &attackingPiece);
         if (board.pieceAtBitboard(move.to, &attackedPiece) && !move.defend)
             score += 10 * (getPieceValue(attackedPiece.pieceType) - getPieceValue(attackingPiece.pieceType));
