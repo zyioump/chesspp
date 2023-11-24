@@ -22,6 +22,8 @@ add_executable(${PROJECT_NAME}
     src/moves/slidingPieces.cpp
     src/utils.cpp
     src/ai/ai.cpp
+    src/ai/quiesce.cpp
+    src/ai/search.cpp
     src/ai/evaluation.cpp
     src/zobrist.cpp
     src/transposition_table.cpp

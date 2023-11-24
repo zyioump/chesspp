@@ -3,13 +3,13 @@
 
 #include <limits>
 #include <chrono>
-#include <map>
+#include <list>
 #include "board.hpp"
 #include "transposition_table.hpp"
 
 class Ai {
     private:
-        int negaMax(Board board, int alpha, int beta, int depth, Move* move, Move* lastBestMove);
+        int negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, std::list<Move>* bestVariation, std::list<Move>* lastVariation);
         int quiesce(Board board, int alpha, int beta, int depth);
         int see(Board board, uint64_t bitboard, int pieceValue);
         int seeCapture(Board board, Move move);
