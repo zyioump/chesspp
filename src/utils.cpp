@@ -39,6 +39,45 @@ std::vector<uint64_t> serializeBitboard(uint64_t bitboard) {
 }
 
 uint64_t rayAttackBitboard[64][8] = {0};
+std::vector<Move> knightAttack[64];
+
+void initAttack() {
+    initKnightAttack();
+    initRayAttack();
+}
+
+void initKnightAttack() {
+    uint64_t noNoEa;
+    uint64_t noEaEa;
+    uint64_t soEaEa;
+    uint64_t soSoEa;
+    uint64_t noNoWe;
+    uint64_t noWeWe;
+    uint64_t soWeWe;
+    uint64_t soSoWe;
+
+    for (int square=0; square < 64; square++) {
+        knightAttack[square] = {};
+        uint64_t bitboard = (uint64_t) 1 << square;
+        noNoEa = (bitboard & noHCol) << 17;
+        noEaEa = (bitboard & noGHCol) << 10;
+        soEaEa = (bitboard & noGHCol) >> 6;
+        soSoEa = (bitboard & noHCol) >> 15;
+        noNoWe = (bitboard & noACol) << 15;
+        noWeWe = (bitboard & noABCol) << 6;
+        soWeWe = (bitboard & noABCol) >> 10;
+        soSoWe = (bitboard & noACol) >> 17;
+
+        if (noNoEa) knightAttack[square].push_back(createMove(bitboard, noNoEa, false, true, false, false, false, KnightDir));
+        if (noEaEa) knightAttack[square].push_back(createMove(bitboard, noEaEa, false, true, false, false, false, KnightDir));
+        if (soEaEa) knightAttack[square].push_back(createMove(bitboard, soEaEa, false, true, false, false, false, KnightDir));
+        if (soSoEa) knightAttack[square].push_back(createMove(bitboard, soSoEa, false, true, false, false, false, KnightDir));
+        if (noNoWe) knightAttack[square].push_back(createMove(bitboard, noNoWe, false, true, false, false, false, KnightDir));
+        if (noWeWe) knightAttack[square].push_back(createMove(bitboard, noWeWe, false, true, false, false, false, KnightDir));
+        if (soWeWe) knightAttack[square].push_back(createMove(bitboard, soWeWe, false, true, false, false, false, KnightDir));
+        if (soSoWe) knightAttack[square].push_back(createMove(bitboard, soSoWe, false, true, false, false, false, KnightDir));
+    }
+}
 
 void initRayAttack(){
     std::map<Direction, uint64_t> directionLookup;

@@ -295,6 +295,6 @@ Board::Board(std::string fen) {
 
     zobrist = zobristHelper.getZobrist(piecesBitboards, castling, enPassantCol, turn);
 
-    initRayAttack();
+    initAttack();
     generateMoves();
 }

@@ -72,7 +72,11 @@ struct Piece {
 };
 
 extern uint64_t rayAttackBitboard[64][8];
+extern std::vector<Move> knightAttack[64];
+
 void initRayAttack();
+void initKnightAttack();
+void initAttack();
 
 struct PinnedPiece {
     uint square;
