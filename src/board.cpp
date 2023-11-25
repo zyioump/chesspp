@@ -35,6 +35,7 @@ bool Board::push(Move move) {
 
     Piece toPiece;
     bool toPieceExist = pieceAtBitboard(move.to, &toPiece);
+    snapshot.lastMoveIsCapture = toPieceExist;
     if (toPieceExist)
         piecesBitboards[toPiece.color][toPiece.pieceType] ^= move.to;
 
@@ -230,6 +231,19 @@ void Board::generateMoves(){
 
     opponentLegalMoves = generateColorMoves(opponentColorBitboard, colorBitboard, globalBitboard, (Color) !turn, nullptr);
     legalMoves = generateColorMoves(colorBitboard, opponentColorBitboard, globalBitboard, turn, &opponentLegalMoves);
+}
+
+bool Board::isRepetition() {
+    bool isRepetition = false;
+    int size = moveStack.size();
+    if (size >= 12) {
+        if (moveStack[size-1].move == moveStack[size-5].move && moveStack[size-1].move == moveStack[size-9].move)
+            if (moveStack[size-3].move == moveStack[size-7].move && moveStack[size-3].move == moveStack[size-11].move)
+                if (moveStack[size-2].move == moveStack[size-6].move && moveStack[size-2].move == moveStack[size-10].move)
+                    if (moveStack[size-4].move == moveStack[size-8].move && moveStack[size-4].move == moveStack[size-12].move)
+                        return true;
+    }
+    return isRepetition;
 }
 
 Board::Board(std::string fen) {

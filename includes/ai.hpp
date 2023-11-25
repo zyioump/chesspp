@@ -47,7 +47,7 @@ class Ai {
         const int maxDepth = 7;
         const int maxQuiesceDepth = 12;
         const int timeLimit = 30;
-        const int aspirationWindow = 25;
+        const int aspirationWindow = getPieceValue(Pawn)/4;
         std::chrono::high_resolution_clock::time_point moveStartTime;
         bool stopSearching = false;
         bool lock = false;

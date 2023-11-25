@@ -3,6 +3,13 @@
 std::pair<int, int> Ai::evaluate(Board board) {
     int isBlack = (board.turn == White) ? 1 : -1;
 
+    if (board.legalMoves.size() == 0) {
+        if (board.inCheck) return std::make_pair(isBlack * (std::numeric_limits<int>::min() + 5), 0);
+        else return std::make_pair(0, 0);
+    }
+
+    if (board.isRepetition()) return std::make_pair(0, 0);
+
     int earlyScore[2]  = {0};
     int endScore[2] = {0};
     int endGame=0;

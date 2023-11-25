@@ -97,6 +97,7 @@ struct BoardSnapshot {
     std::vector<Move> legalMoves;
     std::vector<Move> opponentLegalMoves;
     uint64_t zobrist;
+    bool lastMoveIsCapture;
 };
 
 extern uint64_t noHCol;

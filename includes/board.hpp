@@ -50,6 +50,7 @@ class Board {
         bool push(Move move);
         void pop();
 
+        bool isRepetition();
         uint64_t getColorBitboard(Color color);
         std::vector<uint64_t> pieces(PieceType pieceType, Color color);
         bool pieceAt(uint square, Piece* piece);

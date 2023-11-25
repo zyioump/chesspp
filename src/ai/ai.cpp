@@ -19,7 +19,7 @@ Move Ai::play(Board board) {
     int alpha = std::numeric_limits<int>::min() + 1;
     int beta = std::numeric_limits<int>::max() - 1;
 
-    while (depth < maxDepth) {
+    while (depth <= maxDepth) {
         Move move;
         move.from = 0;
         move.to = 0;
@@ -29,22 +29,16 @@ Move Ai::play(Board board) {
         int moveScore = negaMax(board, alpha, beta, depth, &move, &variation, &bestVariation);
         auto stop = high_resolution_clock::now();
 
-        /* for (Move move: variation) { */
-        /*     std::cout << bitboardToSquareName(move.from) << " " << bitboardToSquareName(move.to) << " - "; */
-        /* } */
-        /* std::cout << "\n"; */
+        /* printf("%d\n", moveScore); */
 
         if (stopSearching) break;
 
-        if (moveScore <= alpha) {
-            alpha -= 3*aspirationWindow;
+        if (moveScore <= alpha || moveScore >= beta) {
+            alpha = std::numeric_limits<int>::min() + 1;
+            beta = std::numeric_limits<int>::max() - 1;
             metrics["Aspiration fail"]++;
             continue;
-        } else if (moveScore >= beta) {
-            beta += 3*aspirationWindow;
-            metrics["Aspiration fail"]++;
-            continue;
-        }
+        } 
 
         alpha = moveScore - aspirationWindow;
         beta = moveScore + aspirationWindow;
@@ -57,6 +51,12 @@ Move Ai::play(Board board) {
 
         depth++;
     }
+
+    /* for (Move move: bestVariation) { */
+        /* std::cout << bitboardToSquareName(move.from) << " " << bitboardToSquareName(move.to) << " - "; */
+    /* } */
+    /* std::cout << "\n"; */
+
 
     auto stop = high_resolution_clock::now();
     metrics["Total time"] = (stop-moveStartTime).count() * 1e-9;

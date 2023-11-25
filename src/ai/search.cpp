@@ -13,6 +13,17 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, 
 
     int alphaOrig = alpha;
 
+    bool futilityEnable = !board.moveStack.back().lastMoveIsCapture && !board.inCheck && depth == 1;
+    if (futilityEnable) {
+        auto start = high_resolution_clock::now();
+        auto futilityEvaluation = evaluate(board);
+        auto stop = high_resolution_clock::now();
+        metrics["Evaluation num"]++;
+        metrics["Evaluation time"] += (stop - start).count() * 1e-9;
+
+        futilityEnable = futilityEvaluation.first + getPieceValue(Bishop) <= alpha;
+    }
+
     TTEntry entry;
     Move* hashMove = nullptr;
     if (transpositionTable.getEntry(board.zobrist, &entry)) {
@@ -51,6 +62,7 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, 
     Move move;
     std::list<Move>* moveLastVariation = nullptr;
     std::list<Move>  moveVariation;
+
     for (auto moveScore: legalMoves) {
         if (stopSearching) break;
 
@@ -62,6 +74,14 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, 
         board.push(move);
         auto stop = high_resolution_clock::now();
         metrics["Push time"] += (stop - start).count() * 1e-9;
+
+        if (futilityEnable && !board.inCheck) {
+            start = high_resolution_clock::now();
+            board.pop();
+            stop = high_resolution_clock::now();
+            metrics["Pop time"] += (stop - start).count() * 1e-9;
+            continue;
+        }
 
         moveVariation.clear();
         moveLastVariation = nullptr;
@@ -83,6 +103,17 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, 
             bestMoveVariation = moveVariation;
             break;
         }
+    }
+
+    if (score==std::numeric_limits<int>::min()) {
+        if (futilityEnable) {
+            metrics["Futility skip"]++;
+            auto start = high_resolution_clock::now();
+            score = quiesce(board, alpha, beta, maxQuiesceDepth);
+            auto stop = high_resolution_clock::now();
+            metrics["Quiesce time"] += (stop - start).count() * 1e-9;
+            return score;
+        } else return 0;
     }
 
     if (bestMovePtr != nullptr) *bestMovePtr = bestMove;
