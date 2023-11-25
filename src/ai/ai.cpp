@@ -15,16 +15,18 @@ Move Ai::play(Board board) {
     std::list<Move> bestVariation = {};
 
     moveStartTime = high_resolution_clock::now();
-    int depth = 0;
+    int depth = 1;
+    int alpha = std::numeric_limits<int>::min() + 1;
+    int beta = std::numeric_limits<int>::max() - 1;
+
     while (depth < maxDepth) {
-        depth++;
         Move move;
         move.from = 0;
         move.to = 0;
 
         std::list<Move> variation = {};
 
-        negaMax(board, std::numeric_limits<int>::min() + 1, std::numeric_limits<int>::max() - 1, depth, &move, &variation, &bestVariation);
+        int moveScore = negaMax(board, alpha, beta, depth, &move, &variation, &bestVariation);
         auto stop = high_resolution_clock::now();
 
         /* for (Move move: variation) { */
@@ -34,11 +36,26 @@ Move Ai::play(Board board) {
 
         if (stopSearching) break;
 
+        if (moveScore <= alpha) {
+            alpha -= 3*aspirationWindow;
+            metrics["Aspiration fail"]++;
+            continue;
+        } else if (moveScore >= beta) {
+            beta += 3*aspirationWindow;
+            metrics["Aspiration fail"]++;
+            continue;
+        }
+
+        alpha = moveScore - aspirationWindow;
+        beta = moveScore + aspirationWindow;
+
         float lastDepthTime = (stop-moveStartTime).count() * 1e-9;
         bestMove = move;
         bestVariation = variation;
         metrics["Last depth"] = depth;
         metrics["Last depth time"] = lastDepthTime;
+
+        depth++;
     }
 
     auto stop = high_resolution_clock::now();
