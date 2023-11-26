@@ -160,11 +160,11 @@ void UserInterface::displayDebug(Board board, Ai ai) {
     std::string maxDepthText = "Depth : " + std::to_string(ai.maxDepth);
     SDL_Rect maxDepthRect = writeText(maxDepthText, castlingRect.x, castlingRect.y + castlingRect.h , textColor);
 
-    std::string maxQuiesceDepthText = "Quiesce depth : " + std::to_string(ai.maxQuiesceDepth);
-    SDL_Rect maxQuiesceDepthRect = writeText(maxQuiesceDepthText, maxDepthRect.x + maxDepthRect.w + 2*margin, maxDepthRect.y, textColor);
+    std::string aspiWinText = "Aspiration window : " + std::to_string(ai.aspirationWindow);
+    SDL_Rect aspiWinRect = writeText(aspiWinText, maxDepthRect.x + maxDepthRect.w + 2*margin, maxDepthRect.y, textColor);
 
     std::string timeLimitText = "Time limit : " + std::to_string(ai.timeLimit);
-    SDL_Rect timeLimitRect = writeText(timeLimitText, maxQuiesceDepthRect.x + maxQuiesceDepthRect.w + 2*margin, maxDepthRect.y, textColor);
+    SDL_Rect timeLimitRect = writeText(timeLimitText, aspiWinRect.x + aspiWinRect.w + 2*margin, maxDepthRect.y, textColor);
 
     std::string zobristText = "Zobrist : " + std::to_string(board.zobrist);
     SDL_Rect zobristRect = writeText(zobristText, maxDepthRect.x, maxDepthRect.y + maxDepthRect.h + margin, textColor);

@@ -1,6 +1,8 @@
 #ifndef Transposition_table_H
 #define Transposition_table_H
 
+#include  <list>
+
 #include "utils.hpp"
 
 enum TTFlag {

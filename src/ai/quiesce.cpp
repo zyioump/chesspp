@@ -62,7 +62,7 @@ int Ai::seeCapture(Board board, Move move) {
     return score;
 }
 
-int Ai::quiesce(Board board, int alpha, int beta, int depth) {
+int Ai::quiesce(Board board, int alpha, int beta) {
     metrics["Evaluation num"]++;
     auto start = high_resolution_clock::now();
     auto evaluation = evaluate(board);
@@ -72,8 +72,6 @@ int Ai::quiesce(Board board, int alpha, int beta, int depth) {
     metrics["Evaluation time"] += (stop - start).count() * 1e-9;
 
     /* return currentScore; */
-
-    if (depth == 0) return currentScore;
 
     if (currentScore >= beta) return beta;
     if (alpha < currentScore) alpha = currentScore;
@@ -108,7 +106,7 @@ int Ai::quiesce(Board board, int alpha, int beta, int depth) {
         auto stop = high_resolution_clock::now();
         metrics["Push time"] += (stop - start).count() * 1e-9;
 
-        score = -quiesce(board, -beta, -alpha, depth-1);
+        score = -quiesce(board, -beta, -alpha);
 
         start = high_resolution_clock::now();
         board.pop();

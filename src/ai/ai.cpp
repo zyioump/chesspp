@@ -29,8 +29,6 @@ Move Ai::play(Board board) {
         int moveScore = negaMax(board, alpha, beta, depth, &move, &variation, &bestVariation);
         auto stop = high_resolution_clock::now();
 
-        /* printf("%d\n", moveScore); */
-
         if (stopSearching) break;
 
         if (moveScore <= alpha || moveScore >= beta) {
@@ -51,12 +49,6 @@ Move Ai::play(Board board) {
 
         depth++;
     }
-
-    /* for (Move move: bestVariation) { */
-        /* std::cout << bitboardToSquareName(move.from) << " " << bitboardToSquareName(move.to) << " - "; */
-    /* } */
-    /* std::cout << "\n"; */
-
 
     auto stop = high_resolution_clock::now();
     metrics["Total time"] = (stop-moveStartTime).count() * 1e-9;

@@ -5,7 +5,7 @@ using std::chrono::high_resolution_clock;
 int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, std::list<Move>* bestVariation, std::list<Move>* lastVariation) {
     if (depth == 0 || board.legalMoves.size() == 0) {
         auto start = high_resolution_clock::now();
-        int score = quiesce(board, alpha, beta, maxQuiesceDepth);
+        int score = quiesce(board, alpha, beta);
         auto stop = high_resolution_clock::now();
         metrics["Quiesce time"] += (stop - start).count() * 1e-9;
         return score;
@@ -31,6 +31,7 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, 
             metrics["TT use"]++;
             if (entry.flag == EXACT) {
                 if (bestMovePtr != nullptr) *bestMovePtr = entry.bestMove;
+                bestVariation->push_front(entry.bestMove);
                 return entry.score;
             } else if (entry.flag == ALPHA) {
                 if (entry.score > alpha) alpha = entry.score;
@@ -41,6 +42,7 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, 
 
             if (alpha >= beta) {
                 if (bestMovePtr != nullptr) *bestMovePtr = entry.bestMove;
+                bestVariation->push_front(entry.bestMove);
                 return entry.score;
             }
         }
@@ -49,6 +51,12 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, 
     int score=std::numeric_limits<int>::min();
     Move bestMove;
     std::list<Move> bestMoveVariation;
+
+    int extension = 0;
+    if (board.inCheck) {
+        metrics["Check extension"]++;
+        extension++;
+    }
 
     Move* lastBestMove = nullptr;
 
@@ -86,7 +94,7 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, 
         moveVariation.clear();
         moveLastVariation = nullptr;
         if (lastBestMove != nullptr) if (move == *lastBestMove) moveLastVariation = lastVariation;
-        score = -negaMax(board, -beta, -alpha, depth-1, nullptr, &moveVariation, moveLastVariation);
+        score = -negaMax(board, -beta, -alpha, depth+extension-1, nullptr, &moveVariation, moveLastVariation);
 
         start = high_resolution_clock::now();
         board.pop();
@@ -109,7 +117,7 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, 
         if (futilityEnable) {
             metrics["Futility skip"]++;
             auto start = high_resolution_clock::now();
-            score = quiesce(board, alpha, beta, maxQuiesceDepth);
+            score = quiesce(board, alpha, beta);
             auto stop = high_resolution_clock::now();
             metrics["Quiesce time"] += (stop - start).count() * 1e-9;
             return score;

@@ -16,7 +16,7 @@ struct PieceBonus{
 class Ai {
     private:
         int negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, std::list<Move>* bestVariation, std::list<Move>* lastVariation);
-        int quiesce(Board board, int alpha, int beta, int depth);
+        int quiesce(Board board, int alpha, int beta);
         int see(Board board, uint64_t bitboard, int pieceValue);
         int seeCapture(Board board, Move move);
 
@@ -44,8 +44,7 @@ class Ai {
         const static int kingSquareEndBonus[64];
 
     public:
-        const int maxDepth = 7;
-        const int maxQuiesceDepth = 12;
+        const int maxDepth = 5;
         const int timeLimit = 30;
         const int aspirationWindow = getPieceValue(Pawn)/4;
         std::chrono::high_resolution_clock::time_point moveStartTime;
