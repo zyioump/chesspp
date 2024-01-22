@@ -54,6 +54,13 @@ void UserInterface::displayBoard(Board board, Ai ai) {
             }
         }
     }
+
+    for (int i=0; i<8; i++) {
+        std::ostringstream colName;
+        colName << char('A' + i);
+        writeText(colName.str(), squareSize * i, squareSize * 7, textColor);
+        writeText(std::to_string(i+1), 0, chessSize - (i+1) * squareSize, textColor);
+    }
     
     if (highlighted_square >= 0) {
         uint i = highlighted_square%8;

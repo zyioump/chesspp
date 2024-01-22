@@ -48,8 +48,22 @@ add_executable(testEvaluation
     src/transposition_table.cpp
 )  
 
+add_executable(perft
+    src/perft.cpp
+    src/board.cpp
+    src/moves/pawn.cpp
+    src/moves/knight.cpp
+    src/moves/king.cpp
+    src/moves/slidingPieces.cpp
+    src/utils.cpp
+    src/zobrist.cpp
+    src/transposition_table.cpp
+)  
+
 target_link_libraries(${PROJECT_NAME} SDL2::Main SDL2::Image SDL2::GFX SDL2::TTF)
 target_include_directories(${PROJECT_NAME} PRIVATE includes/)
 
 target_link_libraries(testEvaluation SDL2::Main SDL2::Image SDL2::GFX SDL2::TTF)
 target_include_directories(testEvaluation PRIVATE includes/)
+
+target_include_directories(perft PRIVATE includes/)

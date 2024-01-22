@@ -44,7 +44,7 @@ class Ai {
         const static int kingSquareEndBonus[64];
 
     public:
-        const int maxDepth = 5;
+        const int maxDepth = 7;
         const int timeLimit = 30;
         const int aspirationWindow = getPieceValue(Pawn)/4;
         std::chrono::high_resolution_clock::time_point moveStartTime;
