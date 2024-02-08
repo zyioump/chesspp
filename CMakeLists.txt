@@ -12,13 +12,11 @@ find_package(SDL2_image REQUIRED)
 find_package(SDL2_gfx REQUIRED)
 find_package(SDL2_ttf REQUIRED)
 
-add_executable(${PROJECT_NAME}
-    src/main.cpp
+set(SOURCE_LIST
     src/user_interface.cpp
     src/board.cpp
-    src/moves/pawn.cpp
-    src/moves/knight.cpp
-    src/moves/king.cpp
+    src/moves/generator.cpp
+    src/moves/nonSlidingPieces.cpp
     src/moves/slidingPieces.cpp
     src/utils.cpp
     src/ai/ai.cpp
@@ -28,42 +26,19 @@ add_executable(${PROJECT_NAME}
     src/ai/piece_table.cpp
     src/zobrist.cpp
     src/transposition_table.cpp
-)  
+)
 
-add_executable(testEvaluation
-    src/testEvaluation.cpp
-    src/user_interface.cpp
-    src/board.cpp
-    src/moves/pawn.cpp
-    src/moves/knight.cpp
-    src/moves/king.cpp
-    src/moves/slidingPieces.cpp
-    src/utils.cpp
-    src/ai/ai.cpp
-    src/ai/quiesce.cpp
-    src/ai/search.cpp
-    src/ai/evaluation.cpp
-    src/ai/piece_table.cpp
-    src/zobrist.cpp
-    src/transposition_table.cpp
-)  
+add_executable(${PROJECT_NAME} src/main.cpp ${SOURCE_LIST})  
 
-add_executable(perft
-    src/perft.cpp
-    src/board.cpp
-    src/moves/pawn.cpp
-    src/moves/knight.cpp
-    src/moves/king.cpp
-    src/moves/slidingPieces.cpp
-    src/utils.cpp
-    src/zobrist.cpp
-    src/transposition_table.cpp
-)  
+add_executable(perft src/perft.cpp ${SOURCE_LIST})
+add_executable(enginet src/enginet.cpp ${SOURCE_LIST})
 
 target_link_libraries(${PROJECT_NAME} SDL2::Main SDL2::Image SDL2::GFX SDL2::TTF)
 target_include_directories(${PROJECT_NAME} PRIVATE includes/)
 
-target_link_libraries(testEvaluation SDL2::Main SDL2::Image SDL2::GFX SDL2::TTF)
-target_include_directories(testEvaluation PRIVATE includes/)
-
+target_link_libraries(perft SDL2::Main SDL2::Image SDL2::GFX SDL2::TTF)
 target_include_directories(perft PRIVATE includes/)
+
+target_link_libraries(enginet SDL2::Main SDL2::Image SDL2::GFX SDL2::TTF)
+target_include_directories(enginet PRIVATE includes/)
+

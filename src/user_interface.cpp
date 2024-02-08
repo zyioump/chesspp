@@ -40,11 +40,10 @@ void UserInterface::displayBoard(Board board, Ai ai) {
 
     for (int color=0; color<=1; color++) {
         for (int piece_type=0; piece_type<6; piece_type++){
-            std::vector<uint64_t> piece_bitboards = board.pieces((PieceType) piece_type, (Color) color);
-            for (uint64_t bitboard : piece_bitboards) {
-                uint square = reverseBitscan(bitboard);
-                int col = square % 8;
-                int row = (square - col) / 8;
+            std::vector<int> pieceSquares = board.pieces((PieceType) piece_type, (Color) color);
+            for (int square : pieceSquares) {
+                int col = square & 7;
+                int row = square >> 3;
 
                 SDL_Rect srcRect = {piece_type*piece_texture_size, color*piece_texture_size, piece_texture_size, piece_texture_size};
                 SDL_Rect dstRect = {col*squareSize, (7-row)*squareSize, squareSize, squareSize};
@@ -68,10 +67,9 @@ void UserInterface::displayBoard(Board board, Ai ai) {
 
         filledCircleRGBA(renderer, (i+0.5) * squareSize, (j+0.5) * squareSize, squareSize/8, 200, 200, 200, 255);
 
-        std::vector<uint>::iterator ite;
-        for (ite=highlighted_moves.begin(); ite!=highlighted_moves.end(); ite++){
-            i = *ite%8;
-            j = (7 - (*ite - i) / 8);
+        for (uint64_t bitboard: highlighted_moves){
+            i = bitboard%8;
+            j = (7 - (bitboard - i) / 8);
             filledCircleRGBA(renderer, (i+0.5) * squareSize, (j+0.5) * squareSize, squareSize/6, 200, 200, 200, 255);
         }
     }
@@ -214,10 +212,8 @@ UIFlag UserInterface::chessClick(SDL_Event e, Board board, Move* move) {
     if (board.pieceAt(square, &piece)){
         highlighted_square = square;
 
-        std::vector<Move>::iterator ite;
-
-        for (ite = board.legalMoves.begin(); ite != board.legalMoves.end(); ite++) {
-            if (reverseBitscan(ite->from) == square && !ite->defend) highlighted_moves.push_back(reverseBitscan(ite->to));
+        for (Move move: board.legalMoves) {
+            if (reverseBitscan(move.from) == square) highlighted_moves.push_back(reverseBitscan(move.to));
         }
     }
     return NONE;

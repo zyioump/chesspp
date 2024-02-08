@@ -25,7 +25,7 @@ class Ai {
         int getPieceValue(PieceType pieceType);
         TranspositionTable transpositionTable;
         void cleanMetrics();
-        PieceBonus getPieceBonus(PieceType pieceType, Color color, std::vector<uint64_t> pieceBitboards);
+        PieceBonus getPieceBonus(PieceType pieceType, Color color, std::vector<int> pieceSquares);
         int transposeSquareForBonus(int square, Color color);
 
 

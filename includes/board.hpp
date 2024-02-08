@@ -3,39 +3,55 @@
 
 #include <string>
 #include <iostream>
-#include <math.h>
+#include <cmath>
 #include <vector>
 #include <cstdint>
 #include <map>
 #include <algorithm>
+#include <random>
+#include <limits>
+#include <filesystem>
 
 #include "utils.hpp"
 #include "zobrist.hpp"
 
+extern uint64_t bishopLegalAttack[64][512];
+extern uint64_t rookLegalAttack[64][4096];
+extern uint64_t knightAttack[64];
+extern uint64_t kingAttack[64];
+extern uint64_t pawnAttack[2][64];
+extern uint64_t pawnMove[2][64];
+extern Magic bishopMagic[64];
+extern Magic rookMagic[64];
+
+extern uint64_t powOf2[64];
+
 class Board {
     private:
+        void initAttack();
+        void initRookAttack();
+        void initKnightAttack();
+        void initKingAttack();
+        void initPawnAttack();
 
-        std::vector<Direction> queenDirections = {No, So, Ea, We, NoEa, NoWe, SoEa, SoWe};
-        std::vector<Direction> rookDirections = {No, So, Ea, We};
-        std::vector<Direction> bishopDirections = {NoEa, NoWe, SoEa, SoWe};
+        void initSlidingPieces();
+        /* void initSlidingPiece(bool bishop); */
+        void find_magic(int square, bool isBishop);
 
-        std::vector<PinnedPiece> pinnedPieces;
+        uint64_t getBishopAttackMask(int square);
+        uint64_t getBishopLegalAttack(int square, uint64_t occupancy);
+        uint64_t getRookAttackMask(int square);
+        uint64_t getRookLegalAttack(int square, uint64_t occupancy);
+        uint64_t getSlidingPieceLegalAttack(int square, uint64_t occupancyBitboard, bool isBishop);
+        int computeMagicKey(uint64_t magic, uint64_t occ, int shift);
 
         void generateMoves();
-        std::vector<Move> generateColorMoves(uint64_t colorBitboard, uint64_t opponentColorBitboard, uint64_t globalBitboard, Color color, std::vector<Move>* opponentLegalAttackPtr);
+        EnemyAttack getEnemyAttackBitboard(uint64_t occupancy);
+        void findPinnedMask(int square, uint64_t pieceAttack, uint64_t kingPieceAttack, uint64_t occupancy, bool isBishop, std::vector<PinnedPiece>* pinnedPieces);
 
-        std::vector<Move> removeNonKingProtectionMove(std::vector<Move> moves, uint64_t piecesBitboard);
-        std::vector<Move> removeNonLegalMove(std::vector<Move> moves, uint64_t kingProtectionSquare, PieceType pieceType, uint64_t kingAttackerBitboard);
-
-        std::vector<Move> generatePawnMoves(uint64_t bitboard, uint64_t globalBitboard, uint64_t colorBitboard, uint64_t opponentColorBitboard, Color color);
-        std::vector<Move> generateKnightMoves(uint64_t bitboard, uint64_t globalBitboard, uint64_t colorBitboard, uint64_t opponentColorBitboard, Color color);
-        std::vector<Move> generateKingMoves(uint64_t bitboard, uint64_t globalBitboard, uint64_t colorBitboard, uint64_t opponentColorBitboard, uint64_t attackedSquare, Direction attackerDirection, Color color);
-        std::vector<Move> generateSlidingPiecesMoves(uint64_t bitboard, std::vector<Direction> rayDirections, uint64_t globalBitboard, uint64_t colorBitboard, uint64_t opponentColorBitboard, Color color);
         Zobrist zobristHelper;
-
     public:
         std::vector<Move> legalMoves;
-        std::vector<Move> opponentLegalMoves;
 
         uint64_t piecesBitboards[2][6] = {0};
         bool inCheck = false;
@@ -52,7 +68,7 @@ class Board {
 
         bool isRepetition();
         uint64_t getColorBitboard(Color color);
-        std::vector<uint64_t> pieces(PieceType pieceType, Color color);
+        std::vector<int> pieces(PieceType pieceType, Color color);
         bool pieceAt(uint square, Piece* piece);
         bool pieceAtBitboard(uint64_t bitboard, Piece* piece);
         Board(std::string fen);

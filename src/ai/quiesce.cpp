@@ -9,7 +9,6 @@ int Ai::see(Board board, uint64_t bitboard, int pieceValue) {
     Piece attacker;
     int value;
     for (Move move: board.legalMoves){
-        if (!move.attack || move.defend) continue;
         if (move.to != bitboard) continue;
 
         board.pieceAtBitboard(move.from, &attacker);
@@ -84,7 +83,6 @@ int Ai::quiesce(Board board, int alpha, int beta) {
     int score;
     for (auto moveScore: legalMoves) {
         move = moveScore.first;
-        if (move.defend || !move.attack) continue;
 
         if (!board.pieceAtBitboard(move.to, &attackedPiece)) continue;
         /* std::cout << "Quiesce " << bitboardToSquareName(move.from) << " to " <<  bitboardToSquareName(move.to) << ", depth " << depth << "\n"; */

@@ -25,9 +25,9 @@ uint64_t Zobrist::getZobrist(uint64_t piecesBitboards[2][6], bool castling[2][2]
 
     for (int color=0; color<2; color++)
         for (int pieceType=0; pieceType<6; pieceType++) {
-            std::vector<uint64_t> bitboards = serializeBitboard(piecesBitboards[color][pieceType]);
-            for (uint64_t bitboard: bitboards)
-                zobrist ^= piecesZobrist[color][pieceType][reverseBitscan(bitboard)];
+            std::vector<int> squares = serializeBitboard(piecesBitboards[color][pieceType]);
+            for (int square: squares)
+                zobrist ^= piecesZobrist[color][pieceType][square];
         }
 
     zobrist ^= castlingZobrist[White][int (castling[White][0]) + (int (castling[White][1]) << 1)];

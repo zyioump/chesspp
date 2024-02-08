@@ -16,7 +16,7 @@ std::pair<int, int> Ai::evaluate(Board board) {
     int score = 0;
 
     for (int pieceType=0; pieceType<6; pieceType++) {
-        std::vector<uint64_t> pieces[2];
+        std::vector<int> pieces[2];
         for (int color=0; color<2; color++) {
             pieces[color] = board.pieces((PieceType) pieceType, (Color) color);
             PieceBonus pieceBonus = getPieceBonus((PieceType) pieceType, (Color) color, pieces[color]);
@@ -50,7 +50,7 @@ int Ai::transposeSquareForBonus(int square, Color color) {
     return index;
 }
 
-PieceBonus Ai::getPieceBonus(PieceType pieceType, Color color, std::vector<uint64_t> pieceBitboards) {
+PieceBonus Ai::getPieceBonus(PieceType pieceType, Color color, std::vector<int> pieceSquares) {
     PieceBonus pieceBonus;
     pieceBonus.earlyBonus = 0;
     pieceBonus.endBonus = 0;
@@ -103,8 +103,7 @@ PieceBonus Ai::getPieceBonus(PieceType pieceType, Color color, std::vector<uint6
     }
 
     int pieceNum = 0;
-    for (uint64_t bitboard: pieceBitboards) {
-        int square = reverseBitscan(bitboard);
+    for (int square: pieceSquares) {
         int bonusIndex = transposeSquareForBonus(square, color);
         pieceBonus.earlyBonus += ealyBonusArray[bonusIndex] + earlyPieceValue;
         pieceBonus.endBonus += endBonusArray[bonusIndex] + endPieceValue;

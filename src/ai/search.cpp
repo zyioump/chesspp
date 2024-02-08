@@ -75,7 +75,6 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, 
         if (stopSearching) break;
 
         move = moveScore.first;
-        if (move.defend) continue;
         /* std::cout << "NegaMax " << bitboardToSquareName(move.from) << " to " <<  bitboardToSquareName(move.to) << ", depth " << depth << "\n"; */
 
         auto start = high_resolution_clock::now();
@@ -165,20 +164,20 @@ std::vector<std::pair<Move, int>> Ai::orderMove(Board board, std::vector<Move> m
         }
 
         board.pieceAtBitboard(move.from, &attackingPiece);
-        if (board.pieceAtBitboard(move.to, &attackedPiece) && !move.defend)
+        if (board.pieceAtBitboard(move.to, &attackedPiece))
             score += 10 * (getPieceValue(attackedPiece.pieceType) - getPieceValue(attackingPiece.pieceType));
 
         if (move.promotion) score += getPieceValue(Queen);
 
-        for (Move opponentMove: board.opponentLegalMoves)
-            if (opponentMove.to == move.to && move.attack && !move.defend) {
-                Piece opponentPiece;
-                board.pieceAtBitboard(opponentMove.from, &opponentPiece);
-                if (opponentPiece.pieceType == Pawn) {
-                    score -= getPieceValue(attackingPiece.pieceType);
-                    break;
-                }
-            }
+        /* for (Move opponentMove: board.opponentLegalMoves) */
+        /*     if (opponentMove.to == move.to) { */
+        /*         Piece opponentPiece; */
+        /*         board.pieceAtBitboard(opponentMove.from, &opponentPiece); */
+        /*         if (opponentPiece.pieceType == Pawn) { */
+        /*             score -= getPieceValue(attackingPiece.pieceType); */
+        /*             break; */
+        /*         } */
+        /*     } */
         movesList.push_back(std::make_pair(move, score));
     }
 
