@@ -1,23 +1,19 @@
 #include "zobrist.hpp"
 
 Zobrist::Zobrist() {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<uint64_t> dis(std::numeric_limits<std::uint64_t>::min(), std::numeric_limits<std::uint64_t>::max());
-
     for (int color=0; color<2; color++) {
         for (int pieceType=0; pieceType<6; pieceType++)
             for (int square=0; square<64; square++) 
-                piecesZobrist[color][pieceType][square] = dis(gen);
+                piecesZobrist[color][pieceType][square] = random_uint64_fewbits();
 
         for (int castling=0; castling<4; castling++)
-            castlingZobrist[color][castling] = dis(gen);
+            castlingZobrist[color][castling] = random_uint64_fewbits();
     }
 
     for (int enPassant=0; enPassant<16; enPassant++)
-        enPassantZobrist[enPassant] = dis(gen);
+        enPassantZobrist[enPassant] = random_uint64_fewbits();
 
-    sideZobrist = dis(gen);
+    sideZobrist = random_uint64_fewbits();
 }
 
 uint64_t Zobrist::getZobrist(uint64_t piecesBitboards[2][6], bool castling[2][2], int enPassantCol, Color color) {

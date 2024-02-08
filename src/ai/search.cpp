@@ -47,7 +47,6 @@ int Ai::negaMax(Board board, int alpha, int beta, int depth, Move* bestMovePtr, 
             }
         }
     }
-
     int score=std::numeric_limits<int>::min();
     Move bestMove;
     std::list<Move> bestMoveVariation;

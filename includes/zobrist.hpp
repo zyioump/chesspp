@@ -1,9 +1,6 @@
 #ifndef Zobrist_H
 #define Zobrist_H
 
-#include <random>
-#include <limits>
-
 #include "utils.hpp"
 
 class Zobrist{
