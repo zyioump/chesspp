@@ -25,10 +25,9 @@ bool Board::push(Move move) {
     snapshot.move = move;
     snapshot.enPassantCol = enPassantCol;
     snapshot.zobrist = zobrist;
-    std::copy(std::begin(castling[0]), std::end(castling[0]), std::begin(snapshot.castling[0]));
-    std::copy(std::begin(castling[1]), std::end(castling[1]), std::begin(snapshot.castling[1]));
-    std::copy(std::begin(piecesBitboards[0]), std::end(piecesBitboards[0]), std::begin(snapshot.piecesBitboards[0]));
-    std::copy(std::begin(piecesBitboards[1]), std::end(piecesBitboards[1]), std::begin(snapshot.piecesBitboards[1]));
+    std::copy(std::begin(castling[0]), std::end(castling[1]), std::begin(snapshot.castling[0]));
+    std::copy(std::begin(piecesBitboards[0]), std::end(piecesBitboards[1]), std::begin(snapshot.piecesBitboards[0]));
+    std::copy(std::begin(enemyAttacks), std::end(enemyAttacks), std::begin(snapshot.enemyAttacks));
     snapshot.legalMoves = legalMoves;
     moveStack.push_back(snapshot);
 
@@ -93,10 +92,9 @@ void Board::pop() {
 
     turn = snapshot.turn;
     enPassantCol = snapshot.enPassantCol;
-    std::copy(std::begin(snapshot.castling[0]), std::end(snapshot.castling[0]), std::begin(castling[0]));
-    std::copy(std::begin(snapshot.castling[1]), std::end(snapshot.castling[1]), std::begin(castling[1]));
-    std::copy(std::begin(snapshot.piecesBitboards[0]), std::end(snapshot.piecesBitboards[0]), std::begin(piecesBitboards[0]));
-    std::copy(std::begin(snapshot.piecesBitboards[1]), std::end(snapshot.piecesBitboards[1]), std::begin(piecesBitboards[1]));
+    std::copy(std::begin(snapshot.castling[0]), std::end(snapshot.castling[1]), std::begin(castling[0]));
+    std::copy(std::begin(snapshot.piecesBitboards[0]), std::end(snapshot.piecesBitboards[1]), std::begin(piecesBitboards[0]));
+    std::copy(std::begin(snapshot.enemyAttacks), std::end(snapshot.enemyAttacks), std::begin(enemyAttacks));
     legalMoves = snapshot.legalMoves;
     zobrist = snapshot.zobrist;
 }

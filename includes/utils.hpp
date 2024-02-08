@@ -78,6 +78,7 @@ struct BoardSnapshot {
     int enPassantCol;
     uint64_t piecesBitboards[2][6];
     std::vector<Move> legalMoves;
+    uint64_t enemyAttacks[6];
     uint64_t zobrist;
     bool lastMoveIsCapture;
 };

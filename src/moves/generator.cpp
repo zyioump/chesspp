@@ -45,6 +45,8 @@ EnemyAttack Board::getEnemyAttackBitboard(uint64_t occupancy) {
                     moveProtect = pieceAttack;
                 captureProtect = powOf2[square];
             }
+
+            enemyAttacks[pieceType] = pieceAttack;
             attackBitboard |= pieceAttack;
         } while (pieceBitboard ^= powOf2[square]);
     }

@@ -52,6 +52,7 @@ class Board {
         Zobrist zobristHelper;
     public:
         std::vector<Move> legalMoves;
+        uint64_t enemyAttacks[6];
 
         uint64_t piecesBitboards[2][6] = {0};
         bool inCheck = false;
