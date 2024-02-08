@@ -168,15 +168,8 @@ std::vector<std::pair<Move, int>> Ai::orderMove(Board board, std::vector<Move> m
 
         if (move.promotion) score += getPieceValue(Queen);
 
-        /* for (Move opponentMove: board.opponentLegalMoves) */
-        /*     if (opponentMove.to == move.to) { */
-        /*         Piece opponentPiece; */
-        /*         board.pieceAtBitboard(opponentMove.from, &opponentPiece); */
-        /*         if (opponentPiece.pieceType == Pawn) { */
-        /*             score -= getPieceValue(attackingPiece.pieceType); */
-        /*             break; */
-        /*         } */
-        /*     } */
+        if (move.to & board.enemyAttacks[Pawn]) score -= getPieceValue(attackingPiece.pieceType);
+
         movesList.push_back(std::make_pair(move, score));
     }
 
