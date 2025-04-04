@@ -32,9 +32,11 @@ EnemyAttack Board::getEnemyAttackBitboard(uint64_t occupancy) {
                     findPinnedMask(square, pieceAttack, kingRookAttack, occupancy, false, &pinnedPieces);
                     break;
                 case Queen:
-                    pieceAttack = getSlidingPieceLegalAttack(square, occupancy, false) | getSlidingPieceLegalAttack(square, occupancy, true);
-                    findPinnedMask(square, pieceAttack, kingBishopAttack, occupancy, false, &pinnedPieces);
-                    findPinnedMask(square, pieceAttack, kingRookAttack, occupancy, true, &pinnedPieces);
+                    uint64_t bishopAttack = getSlidingPieceLegalAttack(square, occupancy, true);
+                    uint64_t rookAttack = getSlidingPieceLegalAttack(square, occupancy, false);
+                    findPinnedMask(square, bishopAttack, kingBishopAttack, occupancy, true, &pinnedPieces);
+                    findPinnedMask(square, rookAttack, kingRookAttack, occupancy, false, &pinnedPieces);
+                    pieceAttack = bishopAttack | rookAttack;
                     break;
             }
 

@@ -28,7 +28,7 @@ UserInterface::UserInterface() {
 void UserInterface::displayBoard(Board board, Ai ai) {
     for (int i=0; i<8; i++) {
         for (int j=0; j<8; j++) {
-            if ((i+j) % 2 == 0)
+            if ((i+j) % 2 == 1)
                 SDL_SetRenderDrawColor(renderer, 0xB5, 0x88, 0x63, 255);
             else 
                 SDL_SetRenderDrawColor(renderer, 0xF0, 0xD9, 0xB5, 255);
