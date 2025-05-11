@@ -26,25 +26,26 @@ EnemyAttack Board::getEnemyAttackBitboard(uint64_t occupancy) {
                 case Bishop:
                     pieceAttack = getSlidingPieceLegalAttack(square, occupancy, true);
                     findPinnedMask(square, pieceAttack, kingBishopAttack, occupancy, true, &pinnedPieces);
+                    if (piecesBitboards[turn][King] & pieceAttack) moveProtect = pieceAttack & kingBishopAttack;
                     break;
                 case Rook:
                     pieceAttack = getSlidingPieceLegalAttack(square, occupancy, false);
                     findPinnedMask(square, pieceAttack, kingRookAttack, occupancy, false, &pinnedPieces);
+                    if (piecesBitboards[turn][King] & pieceAttack) moveProtect = pieceAttack & kingRookAttack;
                     break;
                 case Queen:
                     uint64_t bishopAttack = getSlidingPieceLegalAttack(square, occupancy, true);
                     uint64_t rookAttack = getSlidingPieceLegalAttack(square, occupancy, false);
                     findPinnedMask(square, bishopAttack, kingBishopAttack, occupancy, true, &pinnedPieces);
                     findPinnedMask(square, rookAttack, kingRookAttack, occupancy, false, &pinnedPieces);
+                    if (piecesBitboards[turn][King] & bishopAttack) moveProtect = bishopAttack & kingBishopAttack;
+                    if (piecesBitboards[turn][King] & rookAttack) moveProtect = rookAttack & kingRookAttack;
                     pieceAttack = bishopAttack | rookAttack;
                     break;
             }
 
             if (piecesBitboards[turn][King] & pieceAttack) {
                 checkNum++;
-                moveProtect = 0;
-                if (pieceType == Queen || pieceType == Rook || pieceType == Bishop)
-                    moveProtect = pieceAttack;
                 captureProtect = powOf2[square];
             }
 

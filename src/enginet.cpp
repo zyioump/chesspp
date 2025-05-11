@@ -3,7 +3,7 @@
 #include "ai.hpp"
 
 int main(int argc, char *argv[]) {
-    Board board("r4rk1/ppp2ppp/2n5/8/3P1B2/PQP3P1/2P1qn1P/R4RK1 w - - 0 1");
+    Board board("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
     /* Board board("8/8/8/8/k3p2R/8/3P4/4K3 w - - 0 1"); */
     /* Board board("8/8/8/8/1b6/2P5/8/4K3 w - - 0 1"); */
     /* Board board("2r2rk1/pp1n1pp1/1q3b1p/2pp2PP/2P5/Q4N2/PP1B1P2/1K1R3R w - - 0 20 "); */ 
@@ -21,7 +21,6 @@ int main(int argc, char *argv[]) {
         }
         else if (flag == POP) {
             board.pop();
-            continue;
         }
         else if (flag == NONE) continue;
         ui.displayBoard(board, ai);

@@ -23,6 +23,7 @@ int main(int argc, char *argv[]) {
         }
         else if (flag == POP) {
             board.pop();
+            ui.displayBoard(board, ai);
             continue;
         }
         else if (flag == NONE) continue;
